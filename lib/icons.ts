@@ -1,3 +1,6 @@
+// Shared icon map for all components
+// Add new icons here and they'll be available everywhere
+
 import {
   ArrowRightIcon,
   Calendar1Icon,
@@ -7,33 +10,50 @@ import {
   InfoIcon,
   LeafIcon,
   ListTreeIcon,
+  LucideIcon,
   MailIcon,
+  MessagesSquareIcon,
   PhoneIcon,
   RulerIcon,
   WarehouseIcon,
-  type LucideIcon,
 } from "lucide-react";
 
-export const iconMap: Record<string, LucideIcon> = {
-  arrow: ArrowRightIcon,
-  calendar: Calendar1Icon,
-  download: DownloadIcon,
-  eye: EyeIcon,
-  hardhat: HardHatIcon,
-  info: InfoIcon,
-  leaf: LeafIcon,
-  list: ListTreeIcon,
-  mail: MailIcon,
-  phone: PhoneIcon,
-  ruler: RulerIcon,
-  warehouse: WarehouseIcon,
-};
+// Icon definitions with display labels
+// Add new icons here - they'll automatically appear in admin forms
+const iconDefinitions = {
+  arrow: { label: "Arrow", icon: ArrowRightIcon },
+  calendar: { label: "Calendar", icon: Calendar1Icon },
+  chat: { label: "Chat", icon: MessagesSquareIcon },
+  download: { label: "Download", icon: DownloadIcon },
+  eye: { label: "Eye", icon: EyeIcon },
+  hardhat: { label: "Hard Hat", icon: HardHatIcon },
+  info: { label: "Info", icon: InfoIcon },
+  leaf: { label: "Leaf", icon: LeafIcon },
+  list: { label: "List", icon: ListTreeIcon },
+  mail: { label: "Mail", icon: MailIcon },
+  phone: { label: "Phone", icon: PhoneIcon },
+  ruler: { label: "Ruler", icon: RulerIcon },
+  warehouse: { label: "Warehouse", icon: WarehouseIcon },
+} as const;
 
-export const iconOptions = Object.entries(iconMap).map(([key]) => ({
-  value: key,
-  label: key.charAt(0).toUpperCase() + key.slice(1),
-}));
+// Icon map for rendering (used by components)
+export const iconMap: Record<string, LucideIcon> = Object.fromEntries(
+  Object.entries(iconDefinitions).map(([key, { icon }]) => [key, icon])
+);
 
+// Icon options for admin forms (derived from iconDefinitions)
+export const ICON_OPTIONS = Object.entries(iconDefinitions).map(
+  ([value, { label, icon }]) => ({ label, value, icon })
+);
+
+// Icon options with "None" option for optional icon fields
+export const ICON_OPTIONS_WITH_NONE: Array<{
+  label: string;
+  value: string;
+  icon?: LucideIcon;
+}> = [{ label: "Geen", value: "" }, ...ICON_OPTIONS];
+
+// Helper function to get icon component
 export function getIcon(name?: string): LucideIcon | null {
   if (!name) return null;
   return iconMap[name] || null;

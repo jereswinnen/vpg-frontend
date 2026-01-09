@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSolutionBySlug } from "@/lib/content";
-import { SectionRenderer } from "@/components/shared/SectionRenderer";
+import SectionRenderer from "@/components/shared/SectionRenderer";
 
 interface SolutionPageProps {
   params: Promise<{ slug: string }>;
@@ -29,21 +29,18 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
     notFound();
   }
 
+  const sections = (solution.sections || []) as any[];
+  const headerImage = solution.header_image as any;
+
+  if (sections.length > 0) {
+    return <SectionRenderer sections={sections} headerImage={headerImage} />;
+  }
+
   return (
     <>
-      {solution.sections && solution.sections.length > 0 ? (
-        <SectionRenderer sections={solution.sections} />
-      ) : (
-        <div className="py-16">
-          <div className="o-grid">
-            <div className="col-span-full">
-              <h1>{solution.name}</h1>
-              {solution.subtitle && (
-                <p className="mt-4 text-muted-foreground">{solution.subtitle}</p>
-              )}
-            </div>
-          </div>
-        </div>
+      <h1>{solution.name}</h1>
+      {solution.subtitle && (
+        <p className="col-span-full text-muted-foreground">{solution.subtitle}</p>
       )}
     </>
   );

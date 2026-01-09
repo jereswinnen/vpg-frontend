@@ -62,11 +62,12 @@ export interface Filter {
 
 export interface NavigationLink {
   id: string;
-  label: string;
-  url: string;
+  title: string;
+  slug: string;
+  submenu_heading: string | null;
   location: "header" | "footer";
   order_rank: number;
-  sub_items?: NavigationSubItem[];
+  sub_items: NavigationSubItem[];
 }
 
 export interface NavigationSubItem {

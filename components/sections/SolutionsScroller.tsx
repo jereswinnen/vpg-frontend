@@ -1,27 +1,36 @@
 import { getAllSolutions } from "@/lib/content";
-import { SolutionsScrollerClient } from "./SolutionsScrollerClient";
-import type { SolutionsScrollerSection } from "@/types/sections";
+import SolutionsScrollerClient from "./SolutionsScrollerClient";
 
 interface SolutionsScrollerProps {
-  section: SolutionsScrollerSection;
+  section: {
+    _type: "solutionsScroller";
+    heading?: string;
+    subtitle?: string;
+  };
 }
 
-export async function SolutionsScroller({ section }: SolutionsScrollerProps) {
+export async function SolutionsScroller({
+  section,
+}: SolutionsScrollerProps) {
   const solutions = await getAllSolutions();
 
+  // Transform solutions to include image URLs
   const solutionsWithUrls = solutions.map((solution) => ({
-    id: solution.id,
+    _id: solution.id,
     name: solution.name,
-    subtitle: solution.subtitle,
-    slug: solution.slug,
+    subtitle: solution.subtitle ?? undefined,
+    slug: { current: solution.slug },
     imageUrl: solution.header_image?.url,
     imageAlt: solution.header_image?.alt,
   }));
 
   return (
     <SolutionsScrollerClient
-      title={section.title}
+      heading={section.heading}
+      subtitle={section.subtitle}
       solutions={solutionsWithUrls}
     />
   );
 }
+
+export default SolutionsScroller;

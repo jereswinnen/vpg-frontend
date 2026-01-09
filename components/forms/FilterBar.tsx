@@ -1,112 +1,183 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { Check, ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, CircleXIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import type { FilterCategory } from "@/types/content";
 
-interface FilterBarProps {
-  categories: FilterCategory[];
+interface FilterOption {
+  id: string;
+  name: string;
+  slug: string;
 }
 
-export function FilterBar({ categories }: FilterBarProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+interface CategoryWithOptions {
+  id: string;
+  name: string;
+  slug: string;
+  filters: FilterOption[];
+}
 
-  function getActiveFilters(categorySlug: string): string[] {
-    const value = searchParams.get(categorySlug);
-    return value ? value.split(",") : [];
-  }
+interface FilterBarProps {
+  categories: CategoryWithOptions[];
+  selectedFilters: Record<string, string[]>;
+  onFiltersChange: (filters: Record<string, string[]>) => void;
+}
 
-  function toggleFilter(categorySlug: string, filterSlug: string) {
-    const params = new URLSearchParams(searchParams);
-    const active = getActiveFilters(categorySlug);
+interface CategoryFilterProps {
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  options: FilterOption[];
+  selectedOptions: string[];
+  onSelectionChange: (categorySlug: string, optionSlugs: string[]) => void;
+}
 
-    if (active.includes(filterSlug)) {
-      const updated = active.filter((f) => f !== filterSlug);
-      if (updated.length === 0) {
-        params.delete(categorySlug);
-      } else {
-        params.set(categorySlug, updated.join(","));
-      }
-    } else {
-      params.set(categorySlug, [...active, filterSlug].join(","));
-    }
+function CategoryFilter({
+  category,
+  options,
+  selectedOptions,
+  onSelectionChange,
+}: CategoryFilterProps) {
+  const [open, setOpen] = useState(false);
 
-    router.push(`?${params.toString()}`, { scroll: false });
-  }
+  const handleToggle = (optionSlug: string) => {
+    const newSelection = selectedOptions.includes(optionSlug)
+      ? selectedOptions.filter((s) => s !== optionSlug)
+      : [...selectedOptions, optionSlug];
+    onSelectionChange(category.slug, newSelection);
+    setOpen(false);
+  };
 
-  function clearAllFilters() {
-    router.push("/realisaties", { scroll: false });
-  }
+  const handleClear = () => {
+    onSelectionChange(category.slug, []);
+  };
 
-  const hasActiveFilters = categories.some(
-    (cat) => getActiveFilters(cat.slug).length > 0
+  const selectedCount = selectedOptions.length;
+
+  const selectedNames = options
+    .filter((opt) => selectedOptions.includes(opt.slug))
+    .map((opt) => opt.name);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className="cursor-pointer rounded-full gap-1.5 text-stone-700"
+          aria-expanded={open}
+        >
+          {category.name}
+          {selectedCount > 0 && ":"}
+          {selectedCount > 0 && (
+            <span className="opacity-70">{selectedNames.join(", ")}</span>
+          )}
+          <ChevronDown className="size-4 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-56 p-0">
+        <div className="p-3 border-b">
+          <p className="font-medium text-sm">{category.name}</p>
+        </div>
+        <div className="p-2 max-h-60 overflow-y-auto">
+          {options.map((option) => (
+            <div
+              key={option.id}
+              className="flex items-center gap-2 p-2 rounded-md hover:bg-accent cursor-pointer"
+              onClick={() => handleToggle(option.slug)}
+            >
+              <Checkbox
+                id={option.id}
+                checked={selectedOptions.includes(option.slug)}
+                onCheckedChange={() => handleToggle(option.slug)}
+              />
+              <Label
+                htmlFor={option.id}
+                className="cursor-pointer flex-1 font-normal"
+              >
+                {option.name}
+              </Label>
+            </div>
+          ))}
+        </div>
+        {selectedCount > 0 && (
+          <div className="p-2 border-t">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-muted-foreground"
+              onClick={handleClear}
+            >
+              Wis selectie
+            </Button>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+export function FilterBar({
+  categories,
+  selectedFilters,
+  onFiltersChange,
+}: FilterBarProps) {
+  const handleCategoryChange = (
+    categorySlug: string,
+    optionSlugs: string[],
+  ) => {
+    onFiltersChange({
+      ...selectedFilters,
+      [categorySlug]: optionSlugs,
+    });
+  };
+
+  const handleClearAll = () => {
+    onFiltersChange({});
+  };
+
+  const hasActiveFilters = Object.values(selectedFilters).some(
+    (options) => options.length > 0,
   );
 
-  if (categories.length === 0) {
+  // Only show categories that have filters
+  const visibleCategories = categories.filter((cat) => cat.filters.length > 0);
+
+  if (visibleCategories.length === 0) {
     return null;
   }
 
   return (
-    <div className="mb-8 flex flex-wrap items-center gap-2">
-      {categories.map((category) => {
-        const active = getActiveFilters(category.slug);
-        return (
-          <Popover key={category.id}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                {category.name}
-                {active.length > 0 && (
-                  <span className="rounded-full bg-[var(--c-accent-dark)] px-2 py-0.5 text-xs text-white">
-                    {active.length}
-                  </span>
-                )}
-                <ChevronDown className="size-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-2">
-              {category.filters.map((filter) => {
-                const isActive = active.includes(filter.slug);
-                return (
-                  <button
-                    key={filter.id}
-                    onClick={() => toggleFilter(category.slug, filter.slug)}
-                    className={cn(
-                      "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm hover:bg-accent",
-                      isActive && "font-medium"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "flex size-4 items-center justify-center rounded border",
-                        isActive &&
-                          "border-[var(--c-accent-dark)] bg-[var(--c-accent-dark)] text-white"
-                      )}
-                    >
-                      {isActive && <Check className="size-3" />}
-                    </span>
-                    {filter.name}
-                  </button>
-                );
-              })}
-            </PopoverContent>
-          </Popover>
-        );
-      })}
+    <div className="flex flex-wrap items-center gap-4">
+      <p className="mb-0! text-sm font-medium text-stone-600">Filter op:</p>
+      <div className="flex flex-wrap items-center gap-3">
+        {visibleCategories.map((category) => (
+          <CategoryFilter
+            key={category.id}
+            category={category}
+            options={category.filters}
+            selectedOptions={selectedFilters[category.slug] || []}
+            onSelectionChange={handleCategoryChange}
+          />
+        ))}
+      </div>
       {hasActiveFilters && (
         <Button
-          variant="ghost"
-          onClick={clearAllFilters}
-          className="text-muted-foreground"
+          variant="outline"
+          size="sm"
+          className="cursor-pointer ml-auto text-stone-500 rounded-full"
+          onClick={handleClearAll}
         >
-          Filters wissen
+          <CircleXIcon className="size-4" />
+          Wis filters
         </Button>
       )}
     </div>

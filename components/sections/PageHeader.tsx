@@ -1,48 +1,94 @@
-import Image from "next/image";
-import { Action } from "@/components/shared/Action";
-import { RichText } from "@/components/shared/RichText";
-import type { PageHeaderSection } from "@/types/sections";
+"use client";
 
-interface PageHeaderProps {
-  section: PageHeaderSection;
+import { Action, actionVariants } from "@/components/shared/Action";
+import { iconMap } from "@/lib/icons";
+import Image from "next/image";
+import { RichText } from "@/components/shared/RichText";
+import { cn } from "@/lib/utils";
+
+interface ImageWithUrl {
+  url: string;
+  alt?: string;
 }
 
-export function PageHeader({ section }: PageHeaderProps) {
-  const { title, subtitle, buttons, image } = section;
-  const hasImage = !!image?.url;
+interface PageHeaderButton {
+  label: string;
+  action?: "link";
+  url?: string;
+  icon?: string;
+  variant?: "primary" | "secondary";
+}
+
+interface PageHeaderProps {
+  section: {
+    title: string;
+    subtitle?: string;
+    background?: boolean;
+    showImage?: boolean;
+    showButtons?: boolean;
+    buttons?: PageHeaderButton[];
+  };
+  headerImage?: ImageWithUrl;
+}
+
+export function PageHeader({ section, headerImage }: PageHeaderProps) {
+  const { title, subtitle, background, showImage, showButtons, buttons } =
+    section;
+
+  const hasImage = showImage && headerImage;
 
   return (
-    <header className="o-grid o-grid--bleed bg-[var(--c-accent-dark)] py-12 text-white md:py-20">
-      <div className="col-span-full grid grid-cols-subgrid items-center gap-y-8">
+    <header
+      className={`col-span-full grid grid-cols-subgrid gap-y-8 items-start ${background ? "o-grid--bleed py-8 md:py-14 bg-stone-300" : ""}`}
+    >
+      <div
+        className={`col-span-full ${hasImage ? "md:col-span-4" : ""} flex flex-col justify-center gap-4 md:gap-6`}
+      >
         <div
-          className={`col-span-full flex flex-col gap-4 md:gap-6 ${hasImage ? "md:col-span-4" : ""}`}
+          className={`flex flex-col gap-2 ${!hasImage ? "md:w-[900px]" : ""}`}
         >
-          {title && <h1>{title}</h1>}
+          <h1 className={`mb-0! ${background ? "text-stone-800" : ""}`}>
+            {title}
+          </h1>
           {subtitle && (
-            <div className="text-base text-white/80 md:text-lg">
+            <div
+              className={`font-[420] text-stone-600 ${!hasImage ? "text-lg md:text-xl" : "text-base md:text-lg"}`}
+            >
               <RichText html={subtitle} />
             </div>
           )}
-          {buttons && buttons.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-4">
-              {buttons.map((button, index) => (
-                <Action key={index} action={button} />
-              ))}
-            </div>
-          )}
         </div>
-        {hasImage && image?.url && (
-          <div className="relative col-span-full aspect-[5/3] md:col-span-5">
-            <Image
-              src={image.url}
-              alt={image.alt || ""}
-              fill
-              className="rounded-lg object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
+        {showButtons && buttons && buttons.length > 0 && (
+          <div className="flex items-center gap-4">
+            {buttons.map((button, index) => {
+              const IconComponent = button.icon ? iconMap[button.icon] : null;
+
+              return (
+                <Action
+                  key={index}
+                  href={button.url || "#"}
+                  icon={IconComponent ? <IconComponent /> : undefined}
+                  label={button.label}
+                  variant={button.variant}
+                />
+              );
+            })}
           </div>
         )}
       </div>
+      {hasImage && headerImage?.url && (
+        <div className="col-span-full md:col-span-5 relative aspect-5/3">
+          <Image
+            src={headerImage.url}
+            alt={headerImage.alt || ""}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        </div>
+      )}
     </header>
   );
 }
+
+export default PageHeader;

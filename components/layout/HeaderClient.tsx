@@ -1,84 +1,441 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Menu, X } from "lucide-react";
-import type { NavigationLink } from "@/types/content";
+import { usePathname } from "next/navigation";
+import Logo from "./Logo";
+import { cn } from "@/lib/utils";
+import {
+  FacebookIcon,
+  InstagramIcon,
+  MailIcon,
+  PhoneIcon,
+} from "lucide-react";
+import { Separator } from "../ui/separator";
+import { motion, AnimatePresence } from "motion/react";
+import { useState, useEffect } from "react";
+import { createPortal, flushSync } from "react-dom";
+import MobileMenu, { HamburgerIcon } from "./MobileMenu";
+
+// Animation tokens
+const easing = "circInOut";
+const translateHorizontal = 8;
+const translateVertical = -8;
+const portalDuration = 0.4;
+const subMenuHeightDuration = 0.5;
+const subMenuOpacityDuration = 0.4;
+const subMenuInnerElementDuration = 0.4;
+const subMenuSwitchDuration = 0.4;
+const subMenuBlur = "2px";
+const carouselInterval = 1900;
+const carouselTransitionDuration = 0.4;
+
+type SubItem = {
+  name: string;
+  slug: string;
+  headerImage?: {
+    url: string;
+    alt?: string;
+  };
+};
+
+type NavLink = {
+  title: string;
+  slug: string;
+  submenuHeading?: string;
+  subItems?: SubItem[];
+};
+
+type SiteSettings = {
+  address?: string;
+  phone?: string;
+  email?: string;
+  instagram?: string;
+  facebook?: string;
+};
 
 interface HeaderClientProps {
-  navigation: NavigationLink[];
+  links: NavLink[];
+  settings?: SiteSettings;
+  className?: string;
 }
 
-export function HeaderClient({ navigation }: HeaderClientProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+export default function HeaderClient({
+  links,
+  settings,
+  className,
+}: HeaderClientProps) {
+  const pathname = usePathname();
+  const [activeLink, setActiveLink] = useState<NavLink | null>(null);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [direction, setDirection] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHoveringItem, setIsHoveringItem] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [animationMode, setAnimationMode] = useState<
+    "open" | "switch" | "close"
+  >("open");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const isSubmenuOpen = activeLink !== null;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Close desktop submenu on route change
+  useEffect(() => {
+    if (isSubmenuOpen) {
+      setActiveLink(null);
+      setActiveIndex(-1);
+      setCurrentIndex(0);
+      setIsHoveringItem(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  // Auto-cycle through images when not hovering a specific item
+  useEffect(() => {
+    if (!isSubmenuOpen || isHoveringItem || !activeLink?.subItems?.length) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % activeLink.subItems!.length);
+    }, carouselInterval);
+
+    return () => clearInterval(interval);
+  }, [isSubmenuOpen, isHoveringItem, activeLink]);
+
+  const handleLinkHover = (link: NavLink, index: number) => {
+    if (link.subItems && link.subItems.length > 0) {
+      if (activeIndex !== -1) {
+        setDirection(index > activeIndex ? 1 : -1);
+        setAnimationMode("switch");
+      } else {
+        setAnimationMode("open");
+      }
+      setActiveLink(link);
+      setActiveIndex(index);
+      setCurrentIndex(0);
+      setIsHoveringItem(false);
+    } else {
+      // Close submenu when hovering item without subItems
+      flushSync(() => {
+        setAnimationMode("close");
+      });
+      setActiveLink(null);
+      setActiveIndex(-1);
+      setCurrentIndex(0);
+      setIsHoveringItem(false);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    flushSync(() => {
+      setAnimationMode("close");
+    });
+    setActiveLink(null);
+    setActiveIndex(-1);
+    setCurrentIndex(0);
+    setIsHoveringItem(false);
+  };
+
+  const handleItemHover = (index: number) => {
+    setCurrentIndex(index);
+    setIsHoveringItem(true);
+  };
+
+  const handleItemsLeave = () => {
+    setIsHoveringItem(false);
+  };
+
+  const currentImage = activeLink?.subItems?.[currentIndex]?.headerImage;
 
   return (
     <>
-      {/* Desktop Navigation */}
-      <nav className="hidden items-center gap-8 md:flex">
-        {navigation.map((item) => (
-          <div key={item.id} className="group relative">
-            <Link
-              href={item.url}
-              className="font-medium text-gray-700 transition-colors hover:text-gray-900"
-            >
-              {item.label}
-            </Link>
-            {item.sub_items && item.sub_items.length > 0 && (
-              <div className="invisible absolute left-0 top-full z-50 min-w-64 rounded-lg bg-white p-4 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
-                <div className="grid gap-2">
-                  {item.sub_items.map((subItem) => (
-                    <Link
-                      key={subItem.id}
-                      href={`/realisaties/${subItem.solution?.slug}`}
-                      className="flex items-center gap-3 rounded-md p-2 hover:bg-gray-100"
-                    >
-                      {subItem.solution?.header_image?.url && (
-                        <Image
-                          src={subItem.solution.header_image.url}
-                          alt={subItem.solution.header_image.alt || ""}
-                          width={48}
-                          height={48}
-                          className="rounded object-cover"
-                        />
-                      )}
-                      <span>{subItem.solution?.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+      {/* Desktop backdrop overlay */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {isSubmenuOpen && (
+              <motion.div
+                className="hidden md:block fixed inset-0 bg-stone-50/80 backdrop-blur-[20px] z-40"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: portalDuration, ease: easing }}
+              />
             )}
-          </div>
-        ))}
-      </nav>
+          </AnimatePresence>,
+          document.body,
+        )}
 
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="md:hidden"
-        aria-label="Toggle menu"
+      {/* Mobile menu */}
+      <MobileMenu
+        links={links}
+        settings={settings}
+        isOpen={mobileMenuOpen}
+        onToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
+      />
+
+      <motion.header
+        className={cn(
+          "sticky flex flex-col top-0 z-50 py-8 bg-white",
+          className,
+        )}
+        initial={false}
+        animate={{
+          height: isSubmenuOpen ? "auto" : "auto",
+        }}
+        onMouseLeave={handleMouseLeave}
       >
-        {mobileOpen ? <X className="size-6" /> : <Menu className="size-6" />}
-      </button>
+        <div className="mx-auto w-full max-w-site flex items-center">
+          <Link href="/" className="relative flex flex-col gap-0.5">
+            <Logo className="w-28" />
+            {pathname !== "/" && (
+              <p className="text-xs md:text-sm font-medium text-stone-600">
+                Maatwerk voor binnen en buiten
+              </p>
+            )}
+          </Link>
 
-      {/* Mobile Navigation */}
-      {mobileOpen && (
-        <div className="fixed inset-0 top-16 z-40 bg-white md:hidden">
-          <nav className="flex flex-col p-4">
-            {navigation.map((item) => (
-              <Link
-                key={item.id}
-                href={item.url}
-                className="border-b py-4 text-lg"
-                onClick={() => setMobileOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+          {/* Desktop navigation */}
+          <nav className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm p-2 px-4 rounded-full text-stone-700 bg-stone-100">
+            <ul className="flex gap-6 group/nav">
+              {links.map((link, index) => {
+                const isActive =
+                  pathname === `/${link.slug}` ||
+                  pathname.startsWith(`/${link.slug}/`);
+                return (
+                  <li
+                    key={link.slug}
+                    onMouseEnter={() => handleLinkHover(link, index)}
+                  >
+                    <Link
+                      href={`/${link.slug}`}
+                      className={cn(
+                        "font-medium transition-opacity duration-200 group-hover/nav:opacity-60 hover:opacity-100!",
+                        isActive && "font-semibold text-stone-900 opacity-100!",
+                      )}
+                    >
+                      {link.title}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </nav>
+
+          {/* Right section: Mobile hamburger */}
+          <div className="ml-auto flex items-center gap-3">
+            {/* Mobile hamburger */}
+            <HamburgerIcon
+              isOpen={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden"
+            />
+          </div>
         </div>
-      )}
+
+        {/* Desktop submenu - hidden on mobile */}
+        <AnimatePresence>
+          {isSubmenuOpen && (
+            <motion.div
+              className="hidden md:flex absolute top-full left-0 right-0 gap-8 bg-white overflow-hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{
+                height: { duration: subMenuHeightDuration, ease: easing },
+                opacity: { duration: subMenuOpacityDuration, ease: easing },
+              }}
+            >
+              {/* Inner content with translateVertical on open/close */}
+              <motion.div
+                className="w-full"
+                initial={{ y: translateVertical, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: translateVertical, opacity: 0 }}
+                transition={{
+                  duration: subMenuInnerElementDuration,
+                  ease: easing,
+                }}
+              >
+                <AnimatePresence
+                  mode="wait"
+                  custom={{ animationMode, direction }}
+                >
+                  <motion.div
+                    key={activeLink?.slug}
+                    className="mx-auto w-full max-w-site flex gap-8 py-8"
+                    custom={{ animationMode, direction }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    variants={{
+                      enter: ({
+                        animationMode,
+                        direction,
+                      }: {
+                        animationMode: string;
+                        direction: number;
+                      }) => ({
+                        opacity: animationMode === "switch" ? 0 : 1,
+                        x:
+                          animationMode === "switch"
+                            ? direction * translateHorizontal
+                            : 0,
+                        filter:
+                          animationMode === "switch"
+                            ? `blur(${subMenuBlur})`
+                            : "blur(0px)",
+                      }),
+                      center: {
+                        opacity: 1,
+                        x: 0,
+                        filter: "blur(0px)",
+                      },
+                      exit: ({
+                        animationMode,
+                        direction,
+                      }: {
+                        animationMode: string;
+                        direction: number;
+                      }) => ({
+                        opacity: animationMode === "switch" ? 0 : 1,
+                        x:
+                          animationMode === "switch"
+                            ? -direction * translateHorizontal
+                            : 0,
+                        filter:
+                          animationMode === "switch"
+                            ? `blur(${subMenuBlur})`
+                            : "blur(0px)",
+                      }),
+                    }}
+                    transition={{
+                      duration: subMenuSwitchDuration,
+                      ease: easing,
+                    }}
+                  >
+                    <figure className="w-2xs h-96 relative overflow-hidden">
+                      <AnimatePresence>
+                        {currentImage?.url && (
+                          <motion.img
+                            key={currentIndex}
+                            src={currentImage.url}
+                            alt={currentImage.alt || ""}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{
+                              duration: carouselTransitionDuration,
+                              ease: "easeInOut",
+                            }}
+                          />
+                        )}
+                      </AnimatePresence>
+                    </figure>
+                    <div className="flex flex-col gap-3">
+                      {activeLink?.submenuHeading && (
+                        <span className="text-xs font-medium text-stone-600">
+                          {activeLink.submenuHeading}
+                        </span>
+                      )}
+                      <ul
+                        className="flex flex-col gap-1.5 text-2xl font-semibold [&>*>*]:block [&>*>*]:transition-all [&>*>*]:duration-300 [&>*>*]:hover:translate-x-1.5"
+                        onMouseLeave={handleItemsLeave}
+                      >
+                        {activeLink?.subItems?.map((item, index) => (
+                          <li
+                            key={item.slug}
+                            onMouseEnter={() => handleItemHover(index)}
+                          >
+                            <Link href={`/realisaties/${item.slug}`}>
+                              {item.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="ml-auto w-3xs flex flex-col gap-3">
+                      <span className="text-xs font-medium text-stone-600">
+                        Contacteer
+                      </span>
+                      <div className="flex flex-col gap-6">
+                        <ul className="flex flex-col gap-3 text-base font-medium">
+                          {settings?.address && (
+                            <li
+                              className="[&_p]:mb-0! [&_p+p]:mt-0.5 [&_a]:underline [&_a]:hover:text-stone-700"
+                              dangerouslySetInnerHTML={{ __html: settings.address }}
+                            />
+                          )}
+                          {settings?.phone && (
+                            <li>
+                              <a
+                                href={`tel:${settings.phone}`}
+                                className="flex items-center gap-2 text-stone-500 hover:text-stone-700 transition-colors duration-300"
+                              >
+                                <PhoneIcon className="size-4" />
+                                <span>{settings.phone}</span>
+                              </a>
+                            </li>
+                          )}
+                          {settings?.email && (
+                            <li>
+                              <a
+                                href={`mailto:${settings.email}`}
+                                className="flex items-center gap-2 text-stone-500 hover:text-stone-700 transition-colors duration-300"
+                              >
+                                <MailIcon className="size-4" />
+                                <span>{settings.email}</span>
+                              </a>
+                            </li>
+                          )}
+                        </ul>
+                        {(settings?.instagram || settings?.facebook) && (
+                          <>
+                            <Separator />
+                            <ul className="flex flex-col gap-3 text-sm font-medium">
+                              {settings?.instagram && (
+                                <li>
+                                  <a
+                                    className="flex items-center gap-2 text-stone-500 hover:text-stone-700 transition-colors duration-300"
+                                    href={settings.instagram}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <InstagramIcon className="size-4" />
+                                    Instagram
+                                  </a>
+                                </li>
+                              )}
+                              {settings?.facebook && (
+                                <li>
+                                  <a
+                                    className="flex items-center gap-2 text-stone-500 hover:text-stone-700 transition-colors duration-300"
+                                    href={settings.facebook}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <FacebookIcon className="size-4" />
+                                    Facebook
+                                  </a>
+                                </li>
+                              )}
+                            </ul>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
     </>
   );
 }

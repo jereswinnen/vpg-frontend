@@ -1,84 +1,168 @@
 import Link from "next/link";
-import { Mail, Phone, MapPin } from "lucide-react";
+import Logo from "./Logo";
+import { cn } from "@/lib/utils";
 import { getNavigation, getSiteParameters } from "@/lib/content";
+import { PhoneIcon, InstagramIcon, FacebookIcon, MailIcon } from "lucide-react";
+import { Separator } from "../ui/separator";
 
-export async function Footer() {
-  let navigation: Awaited<ReturnType<typeof getNavigation>> = [];
-  let parameters: Awaited<ReturnType<typeof getSiteParameters>> = null;
+type SubItem = {
+  name: string;
+  slug: string;
+};
 
-  try {
-    [navigation, parameters] = await Promise.all([
-      getNavigation("footer"),
-      getSiteParameters(),
-    ]);
-  } catch (error) {
-    console.error("Failed to fetch footer data:", error);
-  }
+type NavLink = {
+  title: string;
+  slug: string;
+  subItems?: SubItem[];
+};
+
+interface FooterProps {
+  className?: string;
+}
+
+export default async function Footer({ className }: FooterProps) {
+  const [navLinks, settings] = await Promise.all([
+    getNavigation("header"),
+    getSiteParameters(),
+  ]);
+
+  // Transform navigation links to match expected format
+  const links: NavLink[] = navLinks.map((link) => ({
+    title: link.title,
+    slug: link.slug,
+    subItems: link.sub_items
+      ?.filter((item) => item.solution)
+      .map((item) => ({
+        name: item.solution!.name,
+        slug: item.solution!.slug,
+      })),
+  }));
 
   return (
-    <footer className="bg-[var(--c-accent-dark)] py-16 text-white">
-      <div className="o-grid">
-        <div className="col-span-full grid gap-12 md:grid-cols-3">
-          {/* Navigation */}
-          <div>
-            <h3 className="mb-4 font-semibold">Navigatie</h3>
-            <nav className="flex flex-col gap-2">
-              {navigation.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.url}
-                  className="text-white/70 transition-colors hover:text-white"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
+    <footer className={cn("py-10 md:py-14 bg-stone-100", className)}>
+      <div className="o-grid gap-y-8! *:col-span-full">
+        <Separator className="bg-stone-200" />
 
-          {/* Contact */}
-          {parameters && (
-            <div>
-              <h3 className="mb-4 font-semibold">Contact</h3>
-              <div className="flex flex-col gap-3 text-white/70">
-                {parameters.address && (
-                  <div className="flex items-start gap-2">
-                    <MapPin className="mt-1 size-4 shrink-0" />
-                    <span dangerouslySetInnerHTML={{ __html: parameters.address }} />
-                  </div>
-                )}
-                {parameters.phone && (
-                  <a
-                    href={`tel:${parameters.phone}`}
-                    className="flex items-center gap-2 transition-colors hover:text-white"
-                  >
-                    <Phone className="size-4" />
-                    <span>{parameters.phone}</span>
-                  </a>
-                )}
-                {parameters.email && (
-                  <a
-                    href={`mailto:${parameters.email}`}
-                    className="flex items-center gap-2 transition-colors hover:text-white"
-                  >
-                    <Mail className="size-4" />
-                    <span>{parameters.email}</span>
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
+        <div className="flex flex-col gap-12 md:gap-0 md:flex-row md:justify-between">
+          <div className="flex flex-col gap-6 order-last md:order-first basis-full md:basis-[35%]">
+            <Link href="/">
+              <Logo className="w-28 text-stone-900" />
+            </Link>
 
-          {/* Legal */}
-          <div>
-            <h3 className="mb-4 font-semibold">Juridisch</h3>
-            {parameters?.vat_number && (
-              <p className="text-white/70">BTW: {parameters.vat_number}</p>
+            <ul className="flex flex-col gap-3 text-base font-medium">
+              {settings?.address && (
+                <li
+                  className="[&_p]:mb-0! [&_p+p]:mt-0.5 [&_a]:underline [&_a]:hover:text-stone-700"
+                  dangerouslySetInnerHTML={{ __html: settings.address }}
+                />
+              )}
+              {settings?.phone && (
+                <li>
+                  <a
+                    href={`tel:${settings.phone}`}
+                    className="flex items-center gap-2 text-stone-500 hover:text-stone-700 transition-colors duration-300"
+                  >
+                    <PhoneIcon className="size-4" />
+                    <span>{settings.phone}</span>
+                  </a>
+                </li>
+              )}
+              {settings?.email && (
+                <li>
+                  <a
+                    href={`mailto:${settings.email}`}
+                    className="flex items-center gap-2 text-stone-500 hover:text-stone-700 transition-colors duration-300"
+                  >
+                    <MailIcon className="size-4" />
+                    <span>{settings.email}</span>
+                  </a>
+                </li>
+              )}
+            </ul>
+
+            {(settings?.instagram || settings?.facebook) && (
+              <>
+                <Separator className="md:max-w-[60%]!" />
+                <ul className="flex gap-3 *:text-stone-500 *:transition-colors *:duration-300 *:hover:text-stone-700">
+                  {settings?.instagram && (
+                    <li>
+                      <Link
+                        href={settings.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <InstagramIcon className="size-5" />
+                      </Link>
+                    </li>
+                  )}
+                  {settings?.facebook && (
+                    <li>
+                      <Link
+                        href={settings.facebook}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <FacebookIcon className="size-5" />
+                      </Link>
+                    </li>
+                  )}
+                </ul>
+              </>
             )}
           </div>
+
+          <nav className="flex flex-col md:flex-row gap-8 justify-between basis-full md:basis-[65%]">
+            {links.map((link) => (
+              <div key={link.slug} className="flex flex-col gap-3">
+                <Link
+                  href={`/${link.slug}`}
+                  className="text-sm font-medium text-stone-600 hover:text-stone-800 transition-colors duration-300"
+                >
+                  {link.title}
+                </Link>
+                {link.subItems && link.subItems.length > 0 && (
+                  <ul className="flex flex-col gap-0.5">
+                    {link.subItems.map((item) => (
+                      <li key={item.slug}>
+                        <Link
+                          href={`/realisaties/${item.slug}`}
+                          className="text-lg font-medium text-stone-800 hover:text-stone-600 transition-colors duration-300"
+                        >
+                          {item.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </nav>
         </div>
 
-        <div className="col-span-full mt-12 border-t border-white/20 pt-8 text-center text-sm text-white/50">
-          &copy; {new Date().getFullYear()} VPG. Alle rechten voorbehouden.
+        <div className="flex justify-end">
+          <nav className="basis-full md:basis-[65%] text-xs font-medium text-stone-500">
+            <ul className="flex items-center gap-3 flex-wrap">
+              <li>
+                <Link
+                  href="/privacy"
+                  className="transition-all duration-200 hover:text-stone-700"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <Separator orientation="vertical" className="h-3! bg-stone-300" />
+              {settings?.vat_number && (
+                <li className="mb-0!">{settings.vat_number}</li>
+              )}
+              {settings?.vat_number && (
+                <Separator
+                  orientation="vertical"
+                  className="h-3! bg-stone-300"
+                />
+              )}
+              <li>&copy; {new Date().getFullYear()} VPG</li>
+            </ul>
+          </nav>
         </div>
       </div>
     </footer>

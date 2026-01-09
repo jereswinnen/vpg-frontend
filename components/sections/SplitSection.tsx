@@ -1,69 +1,99 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Action } from "@/components/shared/Action";
-import { RichText } from "@/components/shared/RichText";
-import type { SplitSection as SplitSectionType, SplitBlock } from "@/types/sections";
+import { Action } from "../shared/Action";
+import { iconMap } from "@/lib/icons";
+
+interface SplitItemAction {
+  label: string;
+  icon?: string;
+  variant?: "primary" | "secondary";
+}
+
+interface SplitItem {
+  image?: {
+    url: string;
+    alt?: string;
+  };
+  title: string;
+  subtitle?: string;
+  actionType?: "link";
+  href?: string;
+  action?: SplitItemAction;
+}
 
 interface SplitSectionProps {
-  section: SplitSectionType;
+  section: {
+    items: [SplitItem, SplitItem];
+  };
+  className?: string;
 }
 
-function Block({ block }: { block: SplitBlock }) {
-  if (block.type === "empty") {
-    return null;
-  }
+export function SplitSection({ section, className }: SplitSectionProps) {
+  const router = useRouter();
+  const { items } = section;
 
-  if (block.type === "image" && block.images && block.images.length > 0) {
-    return (
-      <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
-        <Image
-          src={block.images[0].url}
-          alt={block.images[0].alt || ""}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
-      </div>
-    );
-  }
-
-  if (block.type === "text") {
-    return (
-      <div className="flex flex-col gap-4">
-        {block.title && <h2 className="text-2xl font-semibold">{block.title}</h2>}
-        {block.subtitle && (
-          <div className="text-stone-600">
-            <RichText html={block.subtitle} />
-          </div>
-        )}
-        {block.actions && block.actions.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-4">
-            {block.actions.map((action, index) => (
-              <Action key={index} action={action} />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return null;
-}
-
-export function SplitSection({ section }: SplitSectionProps) {
-  const { blockLeft, blockRight } = section;
+  const handleItemClick = (item: SplitItem) => {
+    if (item.href) {
+      router.push(item.href);
+    }
+  };
 
   return (
-    <section className="col-span-full grid gap-8 md:grid-cols-2 md:gap-12">
-      <div className="flex flex-col justify-center">
-        <Block block={blockLeft} />
-      </div>
-      <div className="flex flex-col justify-center">
-        <Block block={blockRight} />
-      </div>
+    <section
+      className={cn(
+        "group/split flex flex-col md:flex-row col-span-full w-full gap-8 md:gap-2.5",
+        className,
+      )}
+    >
+      {items.map((item, index) => {
+        const IconComponent = item.action?.icon
+          ? iconMap[item.action.icon]
+          : undefined;
+
+        return (
+          <div
+            key={index}
+            onClick={() => handleItemClick(item)}
+            className="group flex flex-col gap-3 md:basis-1/2 overflow-hidden md:transition-[flex-basis] duration-700 ease-circ md:group-hover/split:hover:basis-[54%] md:group-hover/split:not-[&:hover]:basis-[46%] cursor-pointer"
+          >
+            <div className="relative h-[220px] md:h-[400px] overflow-hidden">
+              {item.image?.url && (
+                <Image
+                  src={item.image.url}
+                  alt={item.image.alt || item.title}
+                  fill
+                  className="object-cover"
+                  sizes="50vw"
+                />
+              )}
+              {item.action && (
+                <div className="absolute inset-0 flex items-center justify-center bg-accent-dark/60 opacity-0 transition-opacity duration-500 ease-circ group-hover:opacity-100">
+                  <Action
+                    className="translate-y-1.5 blur-xs transition-all duration-600 ease-circ group-hover:translate-y-0 group-hover:blur-none"
+                    href={item.href || "#"}
+                    icon={IconComponent ? <IconComponent /> : undefined}
+                    label={item.action.label}
+                    variant={item.action.variant || "secondary"}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col gap-1 *:mb-0!">
+              {item.title && (
+                <h3 className="text-lg font-medium">{item.title}</h3>
+              )}
+              {item.subtitle && (
+                <p className="text-sm text-stone-600">{item.subtitle}</p>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </section>
   );
 }
+
+export default SplitSection;

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPageBySlug } from "@/lib/content";
-import { SectionRenderer } from "@/components/shared/SectionRenderer";
+import SectionRenderer from "@/components/shared/SectionRenderer";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -29,5 +29,8 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  return <SectionRenderer sections={page.sections} />;
+  const sections = (page.sections || []) as any[];
+  const headerImage = page.header_image as any;
+
+  return <SectionRenderer sections={sections} headerImage={headerImage} />;
 }

@@ -1,26 +1,46 @@
-import Link from "next/link";
-import { getNavigation } from "@/lib/content";
-import { HeaderClient } from "./HeaderClient";
+import { getNavigation, getSiteParameters } from "@/lib/content";
+import HeaderClient from "./HeaderClient";
 
-export async function Header() {
-  let navigation: Awaited<ReturnType<typeof getNavigation>> = [];
+interface HeaderProps {
+  className?: string;
+}
 
-  try {
-    navigation = await getNavigation("header");
-  } catch (error) {
-    console.error("Failed to fetch header navigation:", error);
-  }
+export default async function Header({ className }: HeaderProps) {
+  const [navLinks, parameters] = await Promise.all([
+    getNavigation("header"),
+    getSiteParameters(),
+  ]);
+
+  // Transform navigation links to match HeaderClient's expected format
+  const links = navLinks.map((link) => ({
+    title: link.title,
+    slug: link.slug,
+    submenuHeading: link.submenu_heading ?? undefined,
+    subItems: link.sub_items
+      ?.filter((item) => item.solution)
+      .map((item) => ({
+        name: item.solution!.name,
+        slug: item.solution!.slug,
+        headerImage: item.solution!.header_image ?? undefined,
+      })),
+  }));
+
+  // Transform site parameters to convert null to undefined
+  const settings = parameters
+    ? {
+        address: parameters.address ?? undefined,
+        phone: parameters.phone ?? undefined,
+        email: parameters.email ?? undefined,
+        instagram: parameters.instagram ?? undefined,
+        facebook: parameters.facebook ?? undefined,
+      }
+    : undefined;
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
-      <div className="o-grid py-4">
-        <div className="col-span-full flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-[var(--c-accent-dark)]">
-            VPG
-          </Link>
-          <HeaderClient navigation={navigation} />
-        </div>
-      </div>
-    </header>
+    <HeaderClient
+      links={links}
+      settings={settings}
+      className={className}
+    />
   );
 }

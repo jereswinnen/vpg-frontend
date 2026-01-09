@@ -1,9 +1,8 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getAllSolutions, getFilterCategories } from "@/lib/content";
+import { getPageBySlug, getAllSolutions, getFilterCategories } from "@/lib/content";
+import SectionRenderer from "@/components/shared/SectionRenderer";
 import { ProjectsGrid } from "@/components/shared/ProjectsGrid";
-import { FilterBar } from "@/components/forms/FilterBar";
-import { Spinner } from "@/components/ui/spinner";
 
 export const metadata: Metadata = {
   title: "Realisaties | VPG",
@@ -11,22 +10,38 @@ export const metadata: Metadata = {
 };
 
 export default async function RealisatiesPage() {
-  const [solutions, filterCategories] = await Promise.all([
+  const [page, solutions, categories] = await Promise.all([
+    getPageBySlug("realisaties"),
     getAllSolutions(),
     getFilterCategories(),
   ]);
 
+  const sections = (page?.sections || []) as any[];
+  const headerImage = page?.header_image as any;
+
   return (
-    <div className="py-16">
-      <div className="o-grid">
-        <div className="col-span-full">
-          <h1 className="mb-8">Realisaties</h1>
-          <Suspense fallback={<Spinner className="mx-auto" />}>
-            <FilterBar categories={filterCategories} />
-            <ProjectsGrid solutions={solutions} categories={filterCategories} />
-          </Suspense>
-        </div>
-      </div>
-    </div>
+    <section className="col-span-full grid grid-cols-subgrid gap-y-14">
+      {sections.length > 0 && (
+        <SectionRenderer sections={sections} headerImage={headerImage} />
+      )}
+
+      <Suspense
+        fallback={
+          <div className="col-span-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-6">
+            {solutions.slice(0, 6).map((solution) => (
+              <div key={solution.id} className="flex flex-col gap-4 p-4">
+                <div className="aspect-5/3 bg-stone-100 animate-pulse" />
+                <div className="flex flex-col gap-2">
+                  <div className="h-5 w-3/4 bg-stone-100 animate-pulse rounded" />
+                  <div className="h-4 w-1/2 bg-stone-100 animate-pulse rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        }
+      >
+        <ProjectsGrid solutions={solutions as any} categories={categories as any} />
+      </Suspense>
+    </section>
   );
 }

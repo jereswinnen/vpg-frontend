@@ -1,20 +1,19 @@
 import { getHomepage } from "@/lib/content";
-import { SectionRenderer } from "@/components/shared/SectionRenderer";
+import SectionRenderer from "@/components/shared/SectionRenderer";
 
 export default async function HomePage() {
   const page = await getHomepage();
 
   if (!page) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">No homepage content found.</p>
-      </div>
+      <p className="col-span-full text-muted-foreground text-center py-12">
+        No homepage content found.
+      </p>
     );
   }
 
-  return (
-    <div className="o-grid py-8 md:py-12">
-      <SectionRenderer sections={page.sections} />
-    </div>
-  );
+  const sections = (page.sections || []) as any[];
+  const headerImage = page.header_image as any;
+
+  return <SectionRenderer sections={sections} headerImage={headerImage} />;
 }
