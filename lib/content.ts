@@ -7,8 +7,20 @@ import type {
   SiteParameters,
 } from "@/types/content";
 
-const API_BASE =
-  process.env.CONTENT_API_URL || "https://assymo.be/api/content";
+function getApiBase() {
+  // Explicit override takes priority
+  if (process.env.CONTENT_API_URL) {
+    return process.env.CONTENT_API_URL;
+  }
+  // Local development
+  if (process.env.NODE_ENV === "development") {
+    return "http://localhost:3000/api/content";
+  }
+  // Production default
+  return "https://assymo.be/api/content";
+}
+
+const API_BASE = getApiBase();
 const SITE = process.env.SITE_SLUG || "vpg";
 
 // Cache configuration for Next.js
