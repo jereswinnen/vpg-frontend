@@ -1,6 +1,6 @@
 "use client";
 
-import DOMPurify from "dompurify";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface RichTextProps {
@@ -9,7 +9,24 @@ interface RichTextProps {
 }
 
 export function RichText({ html, className }: RichTextProps) {
-  const sanitized = DOMPurify.sanitize(html);
+  const [sanitized, setSanitized] = useState<string>("");
+
+  useEffect(() => {
+    // DOMPurify only works in the browser
+    import("dompurify").then((DOMPurify) => {
+      setSanitized(DOMPurify.default.sanitize(html));
+    });
+  }, [html]);
+
+  if (!sanitized) {
+    // Return unsanitized on first render (will be replaced immediately)
+    return (
+      <div
+        className={cn("prose", className)}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    );
+  }
 
   return (
     <div
