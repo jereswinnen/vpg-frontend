@@ -8,7 +8,7 @@ import type {
 } from "@/types/content";
 
 const API_BASE =
-  process.env.CONTENT_API_URL || "https://admin.assymo.be/api/content";
+  process.env.CONTENT_API_URL || "https://assymo.be/api/content";
 const SITE = process.env.SITE_SLUG || "vpg";
 
 // Cache configuration for Next.js
@@ -18,7 +18,7 @@ const CACHE_OPTIONS: RequestInit = {
 
 async function fetchAPI<T>(
   endpoint: string,
-  params: Record<string, string> = {}
+  params: Record<string, string> = {},
 ): Promise<T | null> {
   const searchParams = new URLSearchParams({ site: SITE, ...params });
   const url = `${API_BASE}${endpoint}?${searchParams}`;
@@ -50,14 +50,16 @@ export async function getAllSolutions(): Promise<SolutionListItem[]> {
   return data?.solutions || [];
 }
 
-export async function getSolutionBySlug(slug: string): Promise<Solution | null> {
+export async function getSolutionBySlug(
+  slug: string,
+): Promise<Solution | null> {
   const data = await fetchAPI<{ solution: Solution }>("/solution", { slug });
   return data?.solution || null;
 }
 
 // Navigation & Filters
 export async function getNavigation(
-  location: "header" | "footer"
+  location: "header" | "footer",
 ): Promise<NavigationLink[]> {
   const data = await fetchAPI<{ navigation: NavigationLink[] }>("/navigation", {
     location,
