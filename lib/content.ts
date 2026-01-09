@@ -53,7 +53,7 @@ export async function getAllSolutions(): Promise<SolutionListItem[]> {
 export async function getSolutionBySlug(
   slug: string,
 ): Promise<Solution | null> {
-  const data = await fetchAPI<{ solution: Solution }>("/solution", { slug });
+  const data = await fetchAPI<{ solution: Solution }>("/solutions", { slug });
   return data?.solution || null;
 }
 
