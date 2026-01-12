@@ -29,8 +29,10 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  const sections = (page.sections || []) as any[];
-  const headerImage = page.header_image as any;
-
-  return <SectionRenderer sections={sections} headerImage={headerImage} />;
+  return (
+    <SectionRenderer
+      sections={page.sections || []}
+      headerImage={page.header_image}
+    />
+  );
 }

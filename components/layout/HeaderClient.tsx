@@ -4,7 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "./Logo";
 import { cn } from "@/lib/utils";
-import { FacebookIcon, InstagramIcon, MailIcon, PhoneIcon } from "lucide-react";
+import { Action } from "../shared/Action";
+import {
+  FacebookIcon,
+  InstagramIcon,
+  MailIcon,
+  PhoneIcon,
+} from "lucide-react";
 import { Separator } from "../ui/separator";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
@@ -186,7 +192,7 @@ export default function HeaderClient({
       >
         <div className="mx-auto w-full max-w-site flex items-center">
           <Link href="/" className="relative flex flex-col gap-0.5">
-            <Logo className="w-28" />
+            <Logo className="w-28 text-accent-darkest" />
             {pathname !== "/" && (
               <p className="text-xs md:text-sm font-medium text-zinc-600">
                 Maatwerk voor binnen en buiten
@@ -221,8 +227,15 @@ export default function HeaderClient({
             </ul>
           </nav>
 
-          {/* Right section: Mobile hamburger */}
+          {/* Right section: CTA + Mobile hamburger */}
           <div className="ml-auto flex items-center gap-3">
+            <Action
+              className="relative"
+              href="/contact"
+              icon={<MailIcon />}
+              label="Contacteer ons"
+            />
+
             {/* Mobile hamburger */}
             <HamburgerIcon
               isOpen={mobileMenuOpen}

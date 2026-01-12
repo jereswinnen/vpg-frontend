@@ -32,16 +32,16 @@ interface SlideshowSectionType extends BaseSection {
 
 interface PageHeaderSection extends BaseSection {
   _type: "pageHeader";
-  title: string;
+  title?: string;
   subtitle?: string;
   background?: boolean;
   showImage?: boolean;
   showButtons?: boolean;
   buttons?: {
     label: string;
-    url: string;
-    icon: string;
-    variant: "primary" | "secondary";
+    url?: string;
+    icon?: string;
+    variant?: "primary" | "secondary";
   }[];
 }
 
@@ -84,16 +84,10 @@ interface SolutionsScrollerSection extends BaseSection {
 
 type FlexibleSectionType = FlexibleSectionData;
 
-type Section =
-  | SlideshowSectionType
-  | PageHeaderSection
-  | SplitSectionType
-  | UspSectionType
-  | SolutionsScrollerSection
-  | FlexibleSectionType;
-
 interface SectionRendererProps {
-  sections: Section[];
+  // Accept generic section array - type narrowing happens in the switch
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sections: Array<{ _type: string; _key?: string; [key: string]: any }>;
   headerImage?: ImageWithUrl;
 }
 
@@ -108,31 +102,48 @@ export default function SectionRenderer({
 
         switch (section._type) {
           case "slideshow":
-            return <SlideshowSection key={key} section={section} />;
+            return (
+              <SlideshowSection
+                key={key}
+                section={section as SlideshowSectionType}
+              />
+            );
 
           case "pageHeader":
             return (
               <PageHeader
                 key={key}
-                section={section}
+                section={section as PageHeaderSection}
                 headerImage={headerImage}
               />
             );
 
           case "splitSection":
-            return <SplitSection key={key} section={section} />;
+            return (
+              <SplitSection key={key} section={section as SplitSectionType} />
+            );
 
           case "uspSection":
-            return <UspSection key={key} section={section} />;
+            return <UspSection key={key} section={section as UspSectionType} />;
 
           case "solutionsScroller":
-            return <SolutionsScroller key={key} section={section} />;
+            return (
+              <SolutionsScroller
+                key={key}
+                section={section as SolutionsScrollerSection}
+              />
+            );
 
           case "flexibleSection":
-            return <FlexibleSection key={key} section={section} />;
+            return (
+              <FlexibleSection
+                key={key}
+                section={section as FlexibleSectionType}
+              />
+            );
 
           default:
-            console.warn(`Unknown section type: ${(section as { _type: string })._type}`);
+            console.warn(`Unknown section type: ${section._type}`);
             return null;
         }
       })}

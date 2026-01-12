@@ -20,13 +20,12 @@ export default async function RealisatiesPage() {
     getFilterCategories(),
   ]);
 
-  const sections = (page?.sections || []) as any[];
-  const headerImage = page?.header_image as any;
+  const sections = page?.sections || [];
 
   return (
     <section className="col-span-full grid grid-cols-subgrid gap-y-14">
       {sections.length > 0 && (
-        <SectionRenderer sections={sections} headerImage={headerImage} />
+        <SectionRenderer sections={sections} headerImage={page?.header_image} />
       )}
 
       <Suspense
@@ -45,8 +44,8 @@ export default async function RealisatiesPage() {
         }
       >
         <ProjectsGrid
-          solutions={solutions as any}
-          categories={categories as any}
+          solutions={solutions}
+          categories={categories}
         />
       </Suspense>
     </section>

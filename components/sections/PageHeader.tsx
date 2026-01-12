@@ -1,10 +1,9 @@
 "use client";
 
-import { Action, actionVariants } from "@/components/shared/Action";
+import { Action } from "@/components/shared/Action";
 import { iconMap } from "@/lib/icons";
 import Image from "next/image";
 import { RichText } from "@/components/shared/RichText";
-import { cn } from "@/lib/utils";
 
 interface ImageWithUrl {
   url: string;
@@ -21,7 +20,7 @@ interface PageHeaderButton {
 
 interface PageHeaderProps {
   section: {
-    title: string;
+    title?: string;
     subtitle?: string;
     background?: boolean;
     showImage?: boolean;
@@ -47,9 +46,11 @@ export function PageHeader({ section, headerImage }: PageHeaderProps) {
         <div
           className={`flex flex-col gap-2 ${!hasImage ? "md:w-[900px]" : ""}`}
         >
-          <h1 className={`mb-0! ${background ? "text-zinc-800" : ""}`}>
-            {title}
-          </h1>
+          {title && (
+            <h1 className={`mb-0! ${background ? "text-zinc-800" : ""}`}>
+              {title}
+            </h1>
+          )}
           {subtitle && (
             <div
               className={`font-[420] text-zinc-600 ${!hasImage ? "text-lg md:text-xl" : "text-base md:text-lg"}`}

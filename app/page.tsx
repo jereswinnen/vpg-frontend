@@ -12,8 +12,10 @@ export default async function HomePage() {
     );
   }
 
-  const sections = (page.sections || []) as any[];
-  const headerImage = page.header_image as any;
-
-  return <SectionRenderer sections={sections} headerImage={headerImage} />;
+  return (
+    <SectionRenderer
+      sections={page.sections || []}
+      headerImage={page.header_image}
+    />
+  );
 }

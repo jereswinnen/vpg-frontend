@@ -29,11 +29,15 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
     notFound();
   }
 
-  const sections = (solution.sections || []) as any[];
-  const headerImage = solution.header_image as any;
+  const sections = solution.sections || [];
 
   if (sections.length > 0) {
-    return <SectionRenderer sections={sections} headerImage={headerImage} />;
+    return (
+      <SectionRenderer
+        sections={sections}
+        headerImage={solution.header_image}
+      />
+    );
   }
 
   return (

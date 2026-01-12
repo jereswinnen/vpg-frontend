@@ -11,13 +11,12 @@ export const metadata: Metadata = {
 export default async function ContactPage() {
   const page = await getPageBySlug("contact");
 
-  const sections = (page?.sections || []) as any[];
-  const headerImage = page?.header_image as any;
+  const sections = page?.sections || [];
 
   return (
     <section className="col-span-full grid grid-cols-subgrid gap-y-14">
       {sections.length > 0 && (
-        <SectionRenderer sections={sections} headerImage={headerImage} />
+        <SectionRenderer sections={sections} headerImage={page?.header_image} />
       )}
       <div className="col-span-full md:col-span-6">
         <h2 className="mb-6">Stuur ons een bericht</h2>
