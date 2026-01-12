@@ -21,11 +21,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="nl" className={instrumentSans.variable}>
-      <body className="min-h-screen font-sans antialiased">
-        <Header />
-        <main className="o-grid py-8 md:py-14">{children}</main>
-        <Footer />
+    <html lang="nl">
+      <body className={`${instrumentSans.variable} font-sans antialiased`}>
+        <div className="flex flex-col gap-y-10 md:gap-y-24">
+          <Header />
+          <main className="o-grid grid-cols-subgrid gap-y-18! md:gap-y-30!">
+            {children}
+          </main>
+          <Footer />
+        </div>
         <Toaster position="bottom-right" />
       </body>
     </html>

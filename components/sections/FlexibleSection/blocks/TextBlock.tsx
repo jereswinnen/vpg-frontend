@@ -18,7 +18,7 @@ export function TextBlock({ block }: TextBlockProps) {
   return (
     <div className="flex flex-col gap-4">
       {heading && <HeadingTag>{heading}</HeadingTag>}
-      {text && <RichText html={text} className="text-stone-600 [&_p]:mb-0!" />}
+      {text && <RichText html={text} className="text-zinc-600 [&_p]:mb-0!" />}
       {button && button.label && (
         <Action
           href={button.url || "#"}

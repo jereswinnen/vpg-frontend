@@ -19,7 +19,9 @@ function BlockRenderer({ blocks }: { blocks?: FlexibleBlock[] }) {
           return null;
         }
 
-        const BlockComponent = blockComponents[block._type] as React.ComponentType<{ block: FlexibleBlock }>;
+        const BlockComponent = blockComponents[
+          block._type
+        ] as React.ComponentType<{ block: FlexibleBlock }>;
         return <BlockComponent key={block._key} block={block} />;
       })}
     </>
@@ -45,7 +47,7 @@ export function FlexibleSection({ section }: FlexibleSectionProps) {
     <section
       className={cn(
         "col-span-full grid grid-cols-subgrid gap-y-8",
-        background && "o-grid--bleed bg-stone-200 py-8 md:py-14",
+        background && "o-grid--bleed bg-zinc-200 py-8 md:py-14",
       )}
     >
       {isSingleColumn ? (

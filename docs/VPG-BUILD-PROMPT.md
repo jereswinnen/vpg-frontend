@@ -658,7 +658,7 @@ export function Action({ action, className }: ActionProps) {
     "inline-flex items-center gap-2 rounded-full px-6 py-3 font-medium transition-colors",
     isPrimary
       ? "bg-[var(--c-accent-light)] text-[var(--c-accent-dark)] hover:bg-[var(--c-accent-light)]/90"
-      : "bg-stone-200 text-stone-800 hover:bg-stone-300",
+      : "bg-zinc-200 text-zinc-800 hover:bg-zinc-300",
     className
   );
 
