@@ -17,10 +17,10 @@
   --u-site-w: 90vw;
   --u-grid-columns: 2;
   --u-grid-gap: 4rem;
-  --c-accent-lightest: #f6f4e6;
-  --c-accent-light: #f2dc6a;
-  --c-accent-dark: #754b89;
-  --c-accent-darkest: #432252;
+  --c-accent-lightest: oklch(0.9649 0.0186 100.12);
+  --c-accent-light: oklch(0.8905 0.1361 98.54);
+  --c-accent-dark: oklch(0.4856 0.1069 314.13);
+  --c-accent-darkest: oklch(0.3195 0.0899 314.17);
   @media (min-width: 46em) {
     --u-site-w: 75vw;
     --u-grid-columns: 9;
