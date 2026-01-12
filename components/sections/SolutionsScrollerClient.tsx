@@ -214,7 +214,7 @@ export default function SolutionsScrollerClient({
             data-card
             initial="idle"
             whileHover="hover"
-            className="group relative shrink-0 w-[80vw] sm:w-[calc((var(--u-site-w)-var(--u-grid-gap))/3)] min-w-[280px] flex flex-col gap-4 p-4 pt-0 border-l border-zinc-200 hover:border-zinc-300 transition-all ease-circ duration-300 cursor-pointer"
+            className="group relative shrink-0 w-[80vw] sm:w-[calc((var(--u-site-w)-var(--u-grid-gap))/3)] min-w-70 flex flex-col gap-4 p-4 pt-0 border-l border-zinc-200 hover:border-zinc-300 transition-all ease-circ duration-300 cursor-pointer"
           >
             {/* Animated background layer */}
             <motion.div
