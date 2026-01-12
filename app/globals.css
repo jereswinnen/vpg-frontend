@@ -212,7 +212,8 @@ p:not(:last-child) {
 
 h1 {
   margin-bottom: 1.2rem;
-  font-size: 2.4rem;
+  font-family: var(--font-instrument-serif);
+  font-size: 2.8rem;
   line-height: 1.2;
   letter-spacing: -0.02em;
   font-weight: 520 !important;
@@ -220,7 +221,7 @@ h1 {
 
 @media (min-width: 46em) {
   h1 {
-    font-size: 3rem;
+    font-size: 3.8rem;
   }
 }
 
