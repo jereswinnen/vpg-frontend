@@ -5,7 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const actionVariants = cva(
-  "cursor-pointer w-fit px-3.5 py-2 flex items-center gap-1.5 text-sm font-medium rounded-full transition-colors duration-250 [&_svg]:size-4 disabled:opacity-50 disabled:cursor-not-allowed",
+  "cursor-pointer w-fit px-3.5 py-2 flex items-center gap-1.5 text-sm font-medium rouded-full transition-colors duration-250 [&_svg]:size-4 disabled:opacity-50 disabled:cursor-not-allowed",
   {
     variants: {
       variant: {
