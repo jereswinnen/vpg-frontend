@@ -18,8 +18,8 @@
   --u-grid-columns: 2;
   --u-grid-gap: 4rem;
   --c-accent-lightest: oklch(0.9649 0.0186 100.12);
-  --c-accent-light: oklch(0.8905 0.1361 98.54);
-  --c-accent-dark: oklch(0.4856 0.1069 314.13);
+  --c-accent-light: oklch(0.8061 0.081 320.8);
+  --c-accent-dark: oklch(0.2555 0.0727 320.52);
   --c-accent-darkest: oklch(0.3195 0.0899 314.17);
   @media (min-width: 46em) {
     --u-site-w: 75vw;

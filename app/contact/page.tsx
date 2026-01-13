@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getPageBySlug } from "@/lib/content";
 import SectionRenderer from "@/components/shared/SectionRenderer";
-import { ContactForm } from "@/components/forms/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact | VPG",
@@ -18,10 +17,6 @@ export default async function ContactPage() {
       {sections.length > 0 && (
         <SectionRenderer sections={sections} headerImage={page?.header_image} />
       )}
-      <div className="col-span-full md:col-span-6">
-        <h2 className="mb-6">Stuur ons een bericht</h2>
-        <ContactForm />
-      </div>
     </section>
   );
 }
