@@ -179,7 +179,7 @@ export default function MobileMenu({
                           },
                         }}
                       >
-                        {links.map((link) => {
+                        {links.map((link, index) => {
                           const isActive =
                             pathname === `/${link.slug}` ||
                             pathname.startsWith(`/${link.slug}/`);
@@ -188,7 +188,7 @@ export default function MobileMenu({
 
                           return (
                             <motion.li
-                              key={link.slug}
+                              key={index}
                               variants={{
                                 hidden: {
                                   opacity: 0,
