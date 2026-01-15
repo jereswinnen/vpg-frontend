@@ -54,7 +54,8 @@ export interface UspItem {
 
 export interface SolutionsScrollerSection extends BaseSection {
   _type: "solutionsScroller";
-  title?: string;
+  heading?: string;
+  subtitle?: string;
   filterCategoryId?: string;
   filterSlug?: string;
 }
