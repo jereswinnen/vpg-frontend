@@ -31,7 +31,7 @@ export function RichText({ html, className }: RichTextProps) {
     <div
       className={cn(
         "prose prose-sm max-w-none [&_p:empty]:min-h-[1em] [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:my-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:my-4 [&_a]:text-primary [&_a]:underline",
-        className
+        className,
       )}
       dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />

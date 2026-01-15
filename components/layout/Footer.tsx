@@ -41,8 +41,6 @@ export default async function Footer({ className }: FooterProps) {
   return (
     <footer className={cn("py-10 md:py-14 bg-zinc-100", className)}>
       <div className="o-grid gap-y-8! *:col-span-full">
-        <Separator className="bg-zinc-200" />
-
         <div className="flex flex-col gap-12 md:gap-0 md:flex-row md:justify-between">
           <div className="flex flex-col gap-6 order-last md:order-first basis-full md:basis-[35%]">
             <Link href="/">
