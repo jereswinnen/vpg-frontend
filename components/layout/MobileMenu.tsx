@@ -381,7 +381,7 @@ export function HamburgerIcon({
     <button
       onClick={onClick}
       className={cn(
-        "relative flex items-center justify-center size-10 rounded-full bg-zinc-100 hover:bg-zinc-200 transition-colors",
+        "relative flex items-center justify-center size-9 bg-zinc-100 hover:bg-zinc-200 transition-colors",
         className,
       )}
       aria-label={isOpen ? "Sluit menu" : "Open menu"}
@@ -389,7 +389,7 @@ export function HamburgerIcon({
     >
       <div className="relative w-5 h-3.5 flex flex-col justify-between">
         <motion.span
-          className="absolute top-0 left-0 w-full h-0.5 bg-zinc-700 rounded-full origin-center"
+          className="absolute top-0 left-0 w-full h-0.5 bg-zinc-600 rounded-full origin-center"
           animate={{
             rotate: isOpen ? 45 : 0,
             y: isOpen ? 6 : 0,
