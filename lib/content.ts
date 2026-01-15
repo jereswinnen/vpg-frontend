@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import type {
   Page,
   Solution,
@@ -23,10 +24,14 @@ function getApiBase() {
 const API_BASE = getApiBase();
 const SITE = process.env.SITE_SLUG || "vpg";
 
-// Cache configuration for Next.js
-const CACHE_OPTIONS: RequestInit = {
-  next: { revalidate: 3600 }, // 1 hour
-};
+// Cache tags for on-demand revalidation
+export const CACHE_TAGS = {
+  pages: "pages",
+  solutions: "solutions",
+  filters: "filters",
+  navigation: "navigation",
+  siteParameters: "site-parameters",
+} as const;
 
 async function fetchAPI<T>(
   endpoint: string,
@@ -36,7 +41,7 @@ async function fetchAPI<T>(
   const url = `${API_BASE}${endpoint}?${searchParams}`;
 
   try {
-    const res = await fetch(url, CACHE_OPTIONS);
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) return null;
     return res.json();
   } catch (error) {
@@ -45,32 +50,63 @@ async function fetchAPI<T>(
   }
 }
 
+// =============================================================================
 // Pages
-export async function getHomepage(): Promise<Page | null> {
+// =============================================================================
+
+async function _getHomepage(): Promise<Page | null> {
   const data = await fetchAPI<{ page: Page }>("/homepage");
   return data?.page || null;
 }
 
-export async function getPageBySlug(slug: string): Promise<Page | null> {
+export const getHomepage = () =>
+  unstable_cache(_getHomepage, ["homepage"], {
+    tags: [CACHE_TAGS.pages],
+    revalidate: 3600,
+  })();
+
+async function _getPageBySlug(slug: string): Promise<Page | null> {
   const data = await fetchAPI<{ page: Page }>("/page", { slug });
   return data?.page || null;
 }
 
+export const getPageBySlug = (slug: string) =>
+  unstable_cache(_getPageBySlug, [`page-${slug}`], {
+    tags: [CACHE_TAGS.pages],
+    revalidate: 3600,
+  })(slug);
+
+// =============================================================================
 // Solutions
-export async function getAllSolutions(): Promise<SolutionListItem[]> {
+// =============================================================================
+
+async function _getAllSolutions(): Promise<SolutionListItem[]> {
   const data = await fetchAPI<{ solutions: SolutionListItem[] }>("/solutions");
   return data?.solutions || [];
 }
 
-export async function getSolutionBySlug(
-  slug: string,
-): Promise<Solution | null> {
+export const getAllSolutions = () =>
+  unstable_cache(_getAllSolutions, ["all-solutions"], {
+    tags: [CACHE_TAGS.solutions],
+    revalidate: 3600,
+  })();
+
+async function _getSolutionBySlug(slug: string): Promise<Solution | null> {
   const data = await fetchAPI<{ solution: Solution }>("/solutions", { slug });
   return data?.solution || null;
 }
 
+export const getSolutionBySlug = (slug: string) =>
+  unstable_cache(_getSolutionBySlug, [`solution-${slug}`], {
+    tags: [CACHE_TAGS.solutions],
+    revalidate: 3600,
+  })(slug);
+
+// =============================================================================
 // Navigation & Filters
-export async function getNavigation(
+// =============================================================================
+
+async function _getNavigation(
   location: "header" | "footer",
 ): Promise<NavigationLink[]> {
   const data = await fetchAPI<{ navigation: NavigationLink[] }>("/navigation", {
@@ -79,13 +115,34 @@ export async function getNavigation(
   return data?.navigation || [];
 }
 
-export async function getFilterCategories(): Promise<FilterCategory[]> {
+export const getNavigation = (location: "header" | "footer") =>
+  unstable_cache(_getNavigation, [`navigation-${location}`], {
+    tags: [CACHE_TAGS.navigation],
+    revalidate: 3600,
+  })(location);
+
+async function _getFilterCategories(): Promise<FilterCategory[]> {
   const data = await fetchAPI<{ categories: FilterCategory[] }>("/filters");
   return data?.categories || [];
 }
 
+export const getFilterCategories = () =>
+  unstable_cache(_getFilterCategories, ["filter-categories"], {
+    tags: [CACHE_TAGS.filters],
+    revalidate: 3600,
+  })();
+
+// =============================================================================
 // Site Parameters
-export async function getSiteParameters(): Promise<SiteParameters | null> {
+// =============================================================================
+
+async function _getSiteParameters(): Promise<SiteParameters | null> {
   const data = await fetchAPI<{ parameters: SiteParameters }>("/parameters");
   return data?.parameters || null;
 }
+
+export const getSiteParameters = () =>
+  unstable_cache(_getSiteParameters, ["site-parameters"], {
+    tags: [CACHE_TAGS.siteParameters],
+    revalidate: 3600,
+  })();
