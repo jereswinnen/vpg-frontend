@@ -83,7 +83,8 @@ export function buildMetadata({
 export async function getPageMetadata(slug: string): Promise<Metadata> {
   const page = await getPageBySlug(slug);
   return buildMetadata({
-    title: page?.title,
+    title: page?.meta_title || page?.title,
+    description: page?.meta_description,
     path: `/${slug}`,
     image: (page?.header_image as any)?.url,
   });

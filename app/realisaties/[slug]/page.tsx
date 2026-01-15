@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: SolutionPageProps): Promise<M
   }
 
   return buildMetadata({
-    title: solution.name,
+    title: solution.meta_title || solution.name,
     description: solution.meta_description || solution.subtitle,
     path: `/realisaties/${slug}`,
     image: (solution.header_image as any)?.url,
