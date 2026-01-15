@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSolutionBySlug } from "@/lib/content";
 import SectionRenderer from "@/components/shared/SectionRenderer";
+import { buildMetadata } from "@/lib/getPageMetadata";
 
 interface SolutionPageProps {
   params: Promise<{ slug: string }>;
@@ -12,13 +13,16 @@ export async function generateMetadata({ params }: SolutionPageProps): Promise<M
   const solution = await getSolutionBySlug(slug);
 
   if (!solution) {
-    return { title: "Solution Not Found" };
+    return { title: "Realisatie niet gevonden — VPG" };
   }
 
-  return {
-    title: solution.meta_title || `${solution.name} | VPG`,
+  return buildMetadata({
+    title: solution.name,
     description: solution.meta_description || solution.subtitle,
-  };
+    path: `/realisaties/${slug}`,
+    image: (solution.header_image as any)?.url,
+    type: "article",
+  });
 }
 
 export default async function SolutionPage({ params }: SolutionPageProps) {

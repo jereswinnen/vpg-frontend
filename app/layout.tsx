@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
 import { Instrument_Serif } from "next/font/google";
 import { Toaster } from "sonner";
@@ -16,11 +15,6 @@ const instrumentSerif = Instrument_Serif({
   weight: "400",
   variable: "--font-instrument-serif",
 });
-
-export const metadata: Metadata = {
-  title: "VPG",
-  description: "VPG - Maatwerk voor binnen en buiten",
-};
 
 export default function RootLayout({
   children,

@@ -7,11 +7,17 @@ import {
 } from "@/lib/content";
 import SectionRenderer from "@/components/shared/SectionRenderer";
 import { ProjectsGrid } from "@/components/shared/ProjectsGrid";
+import { buildMetadata } from "@/lib/getPageMetadata";
 
-export const metadata: Metadata = {
-  title: "Realisaties | VPG",
-  description: "Bekijk onze realisaties en projecten",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPageBySlug("realisaties");
+  return buildMetadata({
+    title: page?.title || "Realisaties",
+    description: page?.meta_description,
+    path: "/realisaties",
+    image: (page?.header_image as any)?.url,
+  });
+}
 
 export default async function RealisatiesPage() {
   const [page, solutions, categories] = await Promise.all([

@@ -1,5 +1,16 @@
 import { getHomepage } from "@/lib/content";
 import SectionRenderer from "@/components/shared/SectionRenderer";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/getPageMetadata";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getHomepage();
+  return buildMetadata({
+    title: page?.title,
+    path: "/",
+    image: (page?.header_image as any)?.url,
+  });
+}
 
 export default async function HomePage() {
   const page = await getHomepage();
