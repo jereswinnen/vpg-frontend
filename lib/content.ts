@@ -16,8 +16,8 @@ function getApiBase() {
   if (process.env.NODE_ENV === "development") {
     return "http://localhost:3000/api/content";
   }
-  // Production default
-  return "https://assymo.be/api/content";
+  // Production default (use Vercel app URL as assymo.be doesn't route API)
+  return "https://assymo-frontend.vercel.app/api/content";
 }
 
 const API_BASE = getApiBase();
