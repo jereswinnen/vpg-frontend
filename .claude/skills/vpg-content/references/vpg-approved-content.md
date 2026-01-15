@@ -184,3 +184,9 @@ We begeleiden u door het hele proces. Technisch advies, constructiedetails, afwe
 </block>
 </onze_aanpak>
 </about_page>
+
+<realisaties_page>
+<subtekst>
+Meer dan dertig jaar vakmanschap in beeld. Laat u inspireren door onze realisaties en ontdek wat mogelijk is voor uw interieur.
+</subtekst>
+</realisaties_page>
