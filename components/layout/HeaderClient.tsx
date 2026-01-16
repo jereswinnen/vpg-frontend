@@ -187,7 +187,7 @@ export default function HeaderClient({
       >
         <div className="mx-auto w-full max-w-site flex items-center">
           <Link href="/" className="relative flex flex-col gap-0.5">
-            <Logo className="w-28 text-accent-darkest" />
+            <Logo className="w-28" />
             {/*{pathname !== "/" && (
               <p className="text-xs md:text-sm font-medium text-zinc-600">
                 Maatwerk voor binnen en buiten

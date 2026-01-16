@@ -44,7 +44,7 @@ export default async function Footer({ className }: FooterProps) {
         <div className="flex flex-col gap-12 md:gap-0 md:flex-row md:justify-between">
           <div className="flex flex-col gap-6 order-last md:order-first basis-full md:basis-[35%]">
             <Link href="/">
-              <Logo className="w-28 text-zinc-900" />
+              <Logo className="w-28" />
             </Link>
 
             <ul className="flex flex-col gap-3 text-base font-medium">
