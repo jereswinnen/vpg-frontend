@@ -104,7 +104,7 @@ export default function Slideshow({
               src={currentImage.url}
               alt={currentImage.alt || "Slideshow image"}
               fill
-              className="object-cover pointer-events-none select-none"
+              className="object-contain pointer-events-none select-none"
               sizes="100vw"
               draggable={false}
               onLoad={() => markLoaded(currentIndex)}
