@@ -7,8 +7,10 @@ Dit bestand bevat door VPG goedgekeurde content. Gebruik dit als primaire refere
 <brand_facts>
 - Meer dan 30 jaar vakmanschap (mag gebruikt worden als trust-builder)
 - Opgericht door Frank Van Puyenbroeck
-- Gestart in Merksem, nu in Sint-Job-in-'t-Goor
-- Atelier van 1500 m² op industriepark Kloosterveld
+- Gestart in Merksem, daarna Zagerijstraat Sint-Job, nu Eikenlei Sint-Job (2025)
+- Samenwerking met Assymo sinds 2025
+- Atelier en showroom gecombineerd
+- Computergestuurde machines, spuitcabine, precisiezagen
 - Belgisch bedrijf
 - Vijf productcategorieën: moderne, cottage, smeedwerk, klassieke, hedendaagse trappen
 </brand_facts>
@@ -165,24 +167,14 @@ Niet te strak, niet te klassiek. Een trap die warmte en moderniteit combineert t
 <titel>Over ons</titel>
 
 <intro>
-VPG Trapmakerij is meer dan dertig jaar vakmanschap. Opgericht door Frank Van Puyenbroeck, groeide ons bedrijf van een kleine werkplaats in Merksem uit tot een gespecialiseerde trappenmaker met een volledig uitgerust atelier van 1500 m² op het industriepark Kloosterveld in Sint-Job-in-'t-Goor.
-
-Vakmanschap dat je ervaart bij elke stap, dat is ons uitgangspunt. We bouwen niet zomaar trappen. We creëren architecturale elementen die jaren meegaan en ruimtes transformeren.
+VPG Trapmakerij combineert meer dan dertig jaar vakmanschap met de nieuwste technieken. Wat begon als een kleine werkplaats in Merksem, is vandaag een modern atelier waar traditie en innovatie samenkomen.
 </intro>
 
-<onze_aanpak>
-<block name="Persoonlijk en precies">
-Elk project start met luisteren. Wat is uw visie? Welke ruimte vullen we in? We combineren uw ideeën met onze technische expertise en creëren oplossingen die perfect passen. Niet standaard, maar uniek.
-</block>
+<uitgebreid_blok>
+Meer dan dertig jaar geleden startte Frank Van Puyenbroeck zijn eigen trappenmakerij in Merksem. Met passie voor hout en oog voor detail groeide VPG uit tot een gevestigde naam in vakmanschap en betrouwbaarheid. De verhuis naar de Zagerijstraat in Sint-Job markeerde een nieuwe fase, met meer ruimte voor grotere projecten en verdere specialisatie.
 
-<block name="Modern atelier, traditioneel vakwerk">
-Ons atelier is volledig uitgerust met de nieuwste technologie. Precisiezagen, moderne spuitcabines, vakkundige handen. Oud ambacht, nieuwe technieken. Het resultaat: trappen die foutloos zijn én er prachtig uitzien.
-</block>
-
-<block name="Van concept tot installatie">
-We begeleiden u door het hele proces. Technisch advies, constructiedetails, afwerkingsopties, alles bespreken we transparant. Geen verrassingen, alleen duidelijkheid.
-</block>
-</onze_aanpak>
+In 2025 zetten we opnieuw een grote stap vooruit. Door de samenwerking met Assymo verhuisden we naar een nieuw atelier aan de Eikenlei in Sint-Job. Een plek waar atelier en showroom samenkomen, waar u onze trappen kunt zien én voelen. We combineren nu ambachtelijke kennis met computergestuurde machines en geavanceerde software. Onze spuitcabine zorgt voor een vlekkeloze afwerking, onze precisiezagen voor millimeterperfecte resultaten. Het beste van twee werelden: de warmte van handwerk, de perfectie van technologie.
+</uitgebreid_blok>
 </about_page>
 
 <realisaties_page>
