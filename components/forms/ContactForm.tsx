@@ -1,48 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { CheckIcon, MailCheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Field,
   FieldGroup,
   FieldLabel,
   FieldError,
+  FieldSeparator,
 } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
-
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
+import {
+  getVisibleFields,
+  getInitialFormData,
+  isValidEmail,
+  type FieldConfig,
+  type Subject,
+  type ContactFormData,
+} from "@/config/contactForm";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
 export function ContactForm() {
+  const [formData, setFormData] = useState<ContactFormData>(getInitialFormData);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-  });
 
   const isSubmitting = status === "submitting";
   const isSuccess = status === "success";
+  const currentSubject = formData.subject as Subject;
 
-  const isFormValid =
-    formData.name.trim() !== "" &&
-    isValidEmail(formData.email) &&
-    formData.message.trim() !== "";
+  const visibleFields = getVisibleFields(currentSubject);
 
-  function updateField(name: string, value: string) {
+  const isFormValid = visibleFields
+    .filter((field) => field.required)
+    .every((field) => {
+      const value = formData[field.name as keyof ContactFormData];
+      if (field.name === "email") return isValidEmail(String(value || ""));
+      if (typeof value === "string") return value.trim() !== "";
+      return Boolean(value);
+    });
+
+  function updateField(name: string, value: string | File | null) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (isSubmitting || isSuccess || !isFormValid) return;
 
@@ -50,77 +64,140 @@ export function ContactForm() {
     setErrorMessage("");
 
     try {
+      const data = new FormData();
+
+      visibleFields.forEach((field) => {
+        const value = formData[field.name as keyof ContactFormData];
+        if (field.type === "file" && value instanceof File) {
+          data.set(field.name, value);
+        } else if (typeof value === "string") {
+          data.set(field.name, value);
+        }
+      });
+
       const res = await fetch("/api/contact", {
         method: "POST",
-        body: JSON.stringify(formData),
-        headers: { "Content-Type": "application/json" },
+        body: data,
       });
 
       if (!res.ok) {
-        throw new Error("Er ging iets mis. Probeer opnieuw.");
+        const json = await res.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(
+          json.error || "Er is iets misgegaan. Probeer later opnieuw."
+        );
       }
 
       setStatus("success");
     } catch (err) {
       setStatus("error");
       setErrorMessage(
-        err instanceof Error ? err.message : "Er ging iets mis. Probeer opnieuw."
+        err instanceof Error
+          ? err.message
+          : "Er is iets misgegaan. Probeer later opnieuw."
       );
+    }
+  }
+
+  function renderField(field: FieldConfig) {
+    const isDisabled = isSubmitting || isSuccess;
+    const value = formData[field.name as keyof ContactFormData];
+
+    switch (field.type) {
+      case "separator":
+        return <FieldSeparator key={field.name} />;
+
+      case "text":
+      case "email":
+      case "tel":
+      case "number":
+        return (
+          <Field key={field.name}>
+            <FieldLabel htmlFor={field.name}>
+              {field.label}{field.required && " *"}
+            </FieldLabel>
+            <Input
+              id={field.name}
+              type={field.type}
+              required={field.required}
+              value={String(value || "")}
+              onChange={(e) => updateField(field.name, e.target.value)}
+              autoComplete={field.autoComplete}
+              placeholder={field.placeholder}
+              disabled={isDisabled}
+            />
+          </Field>
+        );
+
+      case "textarea":
+        return (
+          <Field key={field.name}>
+            <FieldLabel htmlFor={field.name}>
+              {field.label}{field.required && " *"}
+            </FieldLabel>
+            <Textarea
+              id={field.name}
+              required={field.required}
+              value={String(value || "")}
+              onChange={(e) => updateField(field.name, e.target.value)}
+              placeholder={field.placeholder}
+              className="min-h-32"
+              disabled={isDisabled}
+            />
+          </Field>
+        );
+
+      case "select":
+        return (
+          <Field key={field.name}>
+            <FieldLabel htmlFor={field.name}>
+              {field.label}{field.required && " *"}
+            </FieldLabel>
+            <Select
+              value={String(value || "")}
+              onValueChange={(v) => updateField(field.name, v)}
+              disabled={isDisabled}
+            >
+              <SelectTrigger id={field.name} className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {field.options?.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        );
+
+      case "file":
+        return (
+          <Field key={field.name}>
+            <FieldLabel htmlFor={field.name}>
+              {field.label}{field.required && " *"}
+            </FieldLabel>
+            <Input
+              id={field.name}
+              type="file"
+              accept={field.accept}
+              onChange={(e) =>
+                updateField(field.name, e.target.files?.[0] || null)
+              }
+              disabled={isDisabled}
+            />
+          </Field>
+        );
+
+      default:
+        return null;
     }
   }
 
   return (
     <form onSubmit={handleSubmit}>
       <FieldGroup>
-        <Field>
-          <FieldLabel htmlFor="name">Naam *</FieldLabel>
-          <Input
-            id="name"
-            name="name"
-            required
-            value={formData.name}
-            onChange={(e) => updateField("name", e.target.value)}
-            disabled={isSubmitting || isSuccess}
-          />
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="email">E-mail *</FieldLabel>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            required
-            value={formData.email}
-            onChange={(e) => updateField("email", e.target.value)}
-            disabled={isSubmitting || isSuccess}
-          />
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="phone">Telefoon</FieldLabel>
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => updateField("phone", e.target.value)}
-            disabled={isSubmitting || isSuccess}
-          />
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="message">Bericht *</FieldLabel>
-          <Textarea
-            id="message"
-            name="message"
-            className="min-h-40"
-            required
-            value={formData.message}
-            onChange={(e) => updateField("message", e.target.value)}
-            disabled={isSubmitting || isSuccess}
-          />
-        </Field>
+        {visibleFields.map(renderField)}
 
         {status === "error" && <FieldError>{errorMessage}</FieldError>}
 
