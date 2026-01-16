@@ -196,7 +196,7 @@ export default function HeaderClient({
           </Link>
 
           {/* Desktop navigation */}
-          <nav className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm p-2 px-4 rounded-full text-zinc-700 bg-zinc-100">
+          <nav className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm p-2 px-4 text-zinc-700 bg-zinc-100">
             <ul className="flex gap-6 group/nav">
               {links.map((link, index) => {
                 const isActive =
