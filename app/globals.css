@@ -133,6 +133,7 @@
 }
 
 @theme inline {
+  --breakpoint-xs: 24rem;
   --color-accent-lightest: var(--c-accent-lightest);
   --color-accent-light: var(--c-accent-light);
   --color-accent-dark: var(--c-accent-dark);
