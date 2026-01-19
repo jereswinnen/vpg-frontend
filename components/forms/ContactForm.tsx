@@ -21,6 +21,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
+import { useTracking } from "@/lib/tracking";
 import {
   getVisibleFields,
   getInitialFormData,
@@ -36,6 +37,7 @@ export function ContactForm() {
   const [formData, setFormData] = useState<ContactFormData>(getInitialFormData);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const { track } = useTracking();
 
   const isSubmitting = status === "submitting";
   const isSuccess = status === "success";
@@ -88,13 +90,20 @@ export function ContactForm() {
       }
 
       setStatus("success");
+      track("contact_form_submitted", {
+        subject: formData.subject,
+        has_attachment: formData.bestand instanceof File,
+      });
     } catch (err) {
       setStatus("error");
-      setErrorMessage(
+      const message =
         err instanceof Error
           ? err.message
-          : "Er is iets misgegaan. Probeer later opnieuw."
-      );
+          : "Er is iets misgegaan. Probeer later opnieuw.";
+      setErrorMessage(message);
+      track("contact_form_error", {
+        error_type: message,
+      });
     }
   }
 

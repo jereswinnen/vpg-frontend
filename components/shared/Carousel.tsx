@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, type PanInfo } from "motion/react";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { useTracking } from "@/lib/tracking";
 
 const CAROUSEL_INTERVAL = 4000;
 const TRANSITION_DURATION = 0.4;
@@ -32,6 +33,7 @@ export default function Slideshow({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
+  const { track } = useTracking();
 
   const isLoading = !loadedImages.has(currentIndex);
 
@@ -47,11 +49,35 @@ export default function Slideshow({
     setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   }, [images.length]);
 
+  const handlePrevClick = () => {
+    goToPrevious();
+    track("carousel_navigated", {
+      direction: "prev",
+      index: currentIndex === 0 ? images.length - 1 : currentIndex - 1,
+    });
+  };
+
+  const handleNextClick = () => {
+    goToNext();
+    track("carousel_navigated", {
+      direction: "next",
+      index: currentIndex === images.length - 1 ? 0 : currentIndex + 1,
+    });
+  };
+
   const handleDragEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.x > SWIPE_THRESHOLD) {
       goToPrevious();
+      track("carousel_navigated", {
+        direction: "prev",
+        index: currentIndex === 0 ? images.length - 1 : currentIndex - 1,
+      });
     } else if (info.offset.x < -SWIPE_THRESHOLD) {
       goToNext();
+      track("carousel_navigated", {
+        direction: "next",
+        index: currentIndex === images.length - 1 ? 0 : currentIndex + 1,
+      });
     }
   };
 
@@ -132,14 +158,14 @@ export default function Slideshow({
             </span>
             <div className="flex items-center gap-2">
               <button
-                onClick={goToPrevious}
+                onClick={handlePrevClick}
                 className="cursor-pointer text-zinc-600 transition-all duration-400 ease-circ hover:-translate-x-0.5 hover:text-zinc-800"
                 aria-label="Previous image"
               >
                 <ArrowLeftIcon className="size-4" />
               </button>
               <button
-                onClick={goToNext}
+                onClick={handleNextClick}
                 className="cursor-pointer text-zinc-600 transition-all duration-400 ease-circ hover:translate-x-0.5 hover:text-zinc-800"
                 aria-label="Next image"
               >

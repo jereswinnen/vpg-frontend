@@ -10,6 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useTracking } from "@/lib/tracking";
 
 interface FilterOption {
   id: string;
@@ -39,6 +40,8 @@ interface CategoryFilterProps {
   options: FilterOption[];
   selectedOptions: string[];
   onSelectionChange: (categorySlug: string, optionSlugs: string[]) => void;
+  onFilterApplied: (category: string, value: string) => void;
+  onFilterCleared: (category: string) => void;
 }
 
 function CategoryFilter({
@@ -46,19 +49,26 @@ function CategoryFilter({
   options,
   selectedOptions,
   onSelectionChange,
+  onFilterApplied,
+  onFilterCleared,
 }: CategoryFilterProps) {
   const [open, setOpen] = useState(false);
 
   const handleToggle = (optionSlug: string) => {
-    const newSelection = selectedOptions.includes(optionSlug)
+    const isRemoving = selectedOptions.includes(optionSlug);
+    const newSelection = isRemoving
       ? selectedOptions.filter((s) => s !== optionSlug)
       : [...selectedOptions, optionSlug];
     onSelectionChange(category.slug, newSelection);
+    if (!isRemoving) {
+      onFilterApplied(category.slug, optionSlug);
+    }
     setOpen(false);
   };
 
   const handleClear = () => {
     onSelectionChange(category.slug, []);
+    onFilterCleared(category.slug);
   };
 
   const selectedCount = selectedOptions.length;
@@ -130,6 +140,8 @@ export function FilterBar({
   selectedFilters,
   onFiltersChange,
 }: FilterBarProps) {
+  const { track } = useTracking();
+
   const handleCategoryChange = (
     categorySlug: string,
     optionSlugs: string[],
@@ -138,6 +150,14 @@ export function FilterBar({
       ...selectedFilters,
       [categorySlug]: optionSlugs,
     });
+  };
+
+  const handleFilterApplied = (category: string, value: string) => {
+    track("filter_applied", { category, value });
+  };
+
+  const handleFilterCleared = (category: string) => {
+    track("filter_cleared", { category });
   };
 
   const handleClearAll = () => {
@@ -166,6 +186,8 @@ export function FilterBar({
             options={category.filters}
             selectedOptions={selectedFilters[category.slug] || []}
             onSelectionChange={handleCategoryChange}
+            onFilterApplied={handleFilterApplied}
+            onFilterCleared={handleFilterCleared}
           />
         ))}
       </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "./Logo";
 import { cn } from "@/lib/utils";
+import { useTracking } from "@/lib/tracking";
 import { Action } from "../shared/Action";
 import { FacebookIcon, InstagramIcon, MailIcon, PhoneIcon } from "lucide-react";
 import { Separator } from "../ui/separator";
@@ -61,6 +62,7 @@ export default function HeaderClient({
   className,
 }: HeaderClientProps) {
   const pathname = usePathname();
+  const { track } = useTracking();
   const [activeLink, setActiveLink] = useState<NavLink | null>(null);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [direction, setDirection] = useState(1);
@@ -73,6 +75,20 @@ export default function HeaderClient({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isSubmenuOpen = activeLink !== null;
+
+  const handleCtaClick = () => {
+    track("cta_clicked", {
+      location: "header",
+      label: "Contacteer ons",
+      href: "/contact",
+    });
+  };
+
+  const handleOutboundClick = (
+    type: "phone" | "email" | "instagram" | "facebook",
+  ) => {
+    track("outbound_clicked", { type });
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -229,6 +245,7 @@ export default function HeaderClient({
               href="/contact"
               icon={<MailIcon />}
               label="Contacteer ons"
+              onClick={handleCtaClick}
             />
 
             {/* Mobile hamburger */}
@@ -381,6 +398,7 @@ export default function HeaderClient({
                               <a
                                 href={`tel:${settings.phone}`}
                                 className="flex items-center gap-2 text-zinc-500 hover:text-zinc-700 transition-colors duration-300"
+                                onClick={() => handleOutboundClick("phone")}
                               >
                                 <PhoneIcon className="size-4" />
                                 <span>{settings.phone}</span>
@@ -392,6 +410,7 @@ export default function HeaderClient({
                               <a
                                 href={`mailto:${settings.email}`}
                                 className="flex items-center gap-2 text-zinc-500 hover:text-zinc-700 transition-colors duration-300"
+                                onClick={() => handleOutboundClick("email")}
                               >
                                 <MailIcon className="size-4" />
                                 <span>{settings.email}</span>
@@ -410,6 +429,9 @@ export default function HeaderClient({
                                     href={settings.instagram}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    onClick={() =>
+                                      handleOutboundClick("instagram")
+                                    }
                                   >
                                     <InstagramIcon className="size-4" />
                                     Instagram
@@ -423,6 +445,9 @@ export default function HeaderClient({
                                     href={settings.facebook}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    onClick={() =>
+                                      handleOutboundClick("facebook")
+                                    }
                                   >
                                     <FacebookIcon className="size-4" />
                                     Facebook

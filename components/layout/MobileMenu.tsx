@@ -12,6 +12,7 @@ import {
   FacebookIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTracking } from "@/lib/tracking";
 import { Separator } from "../ui/separator";
 
 /**
@@ -68,8 +69,15 @@ export default function MobileMenu({
   onToggle,
 }: MobileMenuProps) {
   const pathname = usePathname();
+  const { track } = useTracking();
   const [currentPage, setCurrentPage] = useState<NavLink | null>(null);
   const [direction, setDirection] = useState(1);
+
+  const handleOutboundClick = (
+    type: "phone" | "instagram" | "facebook",
+  ) => {
+    track("outbound_clicked", { type });
+  };
 
   // Body scroll lock
   useEffect(() => {
@@ -269,6 +277,7 @@ export default function MobileMenu({
                                 <a
                                   href={`tel:${settings.phone}`}
                                   className="flex items-center gap-2 text-zinc-500 hover:text-zinc-700 transition-colors duration-300"
+                                  onClick={() => handleOutboundClick("phone")}
                                 >
                                   <PhoneIcon className="size-4" />
                                   <span>{settings.phone}</span>
@@ -287,6 +296,9 @@ export default function MobileMenu({
                                       href={settings.instagram}
                                       target="_blank"
                                       rel="noopener noreferrer"
+                                      onClick={() =>
+                                        handleOutboundClick("instagram")
+                                      }
                                     >
                                       <InstagramIcon className="size-4" />
                                       Instagram
@@ -300,6 +312,9 @@ export default function MobileMenu({
                                       href={settings.facebook}
                                       target="_blank"
                                       rel="noopener noreferrer"
+                                      onClick={() =>
+                                        handleOutboundClick("facebook")
+                                      }
                                     >
                                       <FacebookIcon className="size-4" />
                                       Facebook

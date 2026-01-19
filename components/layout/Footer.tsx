@@ -2,8 +2,8 @@ import Link from "next/link";
 import Logo from "./Logo";
 import { cn } from "@/lib/utils";
 import { getNavigation, getSiteParameters } from "@/lib/content";
-import { PhoneIcon, InstagramIcon, FacebookIcon, MailIcon } from "lucide-react";
 import { Separator } from "../ui/separator";
+import { FooterContactLinks, FooterSocialLinks } from "./FooterLinks";
 
 type SubItem = {
   name: string;
@@ -54,57 +54,19 @@ export default async function Footer({ className }: FooterProps) {
                   dangerouslySetInnerHTML={{ __html: settings.address }}
                 />
               )}
-              {settings?.phone && (
-                <li>
-                  <a
-                    href={`tel:${settings.phone}`}
-                    className="flex items-center gap-2 text-zinc-500 hover:text-zinc-700 transition-colors duration-300"
-                  >
-                    <PhoneIcon className="size-4" />
-                    <span>{settings.phone}</span>
-                  </a>
-                </li>
-              )}
-              {settings?.email && (
-                <li>
-                  <a
-                    href={`mailto:${settings.email}`}
-                    className="flex items-center gap-2 text-zinc-500 hover:text-zinc-700 transition-colors duration-300"
-                  >
-                    <MailIcon className="size-4" />
-                    <span>{settings.email}</span>
-                  </a>
-                </li>
-              )}
+              <FooterContactLinks
+                phone={settings?.phone}
+                email={settings?.email}
+              />
             </ul>
 
             {(settings?.instagram || settings?.facebook) && (
               <>
                 <Separator className="md:max-w-[60%]!" />
-                <ul className="flex gap-3 *:text-zinc-500 *:transition-colors *:duration-300 *:hover:text-zinc-700">
-                  {settings?.instagram && (
-                    <li>
-                      <Link
-                        href={settings.instagram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <InstagramIcon className="size-5" />
-                      </Link>
-                    </li>
-                  )}
-                  {settings?.facebook && (
-                    <li>
-                      <Link
-                        href={settings.facebook}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <FacebookIcon className="size-5" />
-                      </Link>
-                    </li>
-                  )}
-                </ul>
+                <FooterSocialLinks
+                  instagram={settings?.instagram}
+                  facebook={settings?.facebook}
+                />
               </>
             )}
           </div>
