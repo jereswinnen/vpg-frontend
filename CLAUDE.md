@@ -79,6 +79,40 @@ CONTACT_EMAIL=      # Recipient for contact form
 - Motion library for animations (not Framer Motion)
 - `cn()` utility for className merging (clsx + tailwind-merge)
 
+## Analytics (OpenPanel)
+
+This project uses OpenPanel for analytics. Use the `useTracking` hook from `lib/tracking.ts` in client components.
+
+### Usage
+```typescript
+import { useTracking } from "@/lib/tracking";
+
+function MyComponent() {
+  const { track } = useTracking();
+
+  const handleClick = () => {
+    track("event_name", { property: "value" });
+  };
+}
+```
+
+### Existing Events
+| Event | Properties | Component |
+|-------|------------|-----------|
+| `contact_form_submitted` | `subject`, `has_attachment` | ContactForm |
+| `contact_form_error` | `error_type` | ContactForm |
+| `project_card_clicked` | `project_slug`, `project_name` | ProjectsGrid |
+| `filter_applied` | `category`, `value` | FilterBar |
+| `filter_cleared` | `category` | FilterBar |
+| `cta_clicked` | `location`, `label`, `href` | HeaderClient |
+| `outbound_clicked` | `type` (phone/email/instagram/facebook) | Footer, HeaderClient, MobileMenu |
+| `carousel_navigated` | `direction`, `index` | Carousel |
+
+### Adding New Events
+- Use lowercase with underscores: `feature_action` (e.g., `video_played`)
+- Include relevant properties for filtering/grouping in OpenPanel
+- Keep events consistent with assymo-frontend (shared components should track identically)
+
 ## Git Commits
 
 Use conventional commit prefixes:
