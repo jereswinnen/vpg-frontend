@@ -12,6 +12,7 @@ interface ContactFormEmailProps {
   name: string;
   email: string;
   phone?: string;
+  address?: string;
   message: string;
 }
 
@@ -19,6 +20,7 @@ export function ContactFormEmail({
   name,
   email,
   phone,
+  address,
   message,
 }: ContactFormEmailProps) {
   return (
@@ -47,6 +49,13 @@ export function ContactFormEmail({
                 {phone}
               </Link>
             </Text>
+          </>
+        )}
+
+        {address && (
+          <>
+            <Text style={typography.label}>Adres</Text>
+            <Text style={typography.value}>{address}</Text>
           </>
         )}
 

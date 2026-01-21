@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
     const name = (form.get("name") as string) || "";
     const email = (form.get("email") as string) || "";
     const phone = (form.get("phone") as string) || "";
+    const address = (form.get("address") as string) || "";
 
     // Send email based on subject
     if (subject === "Offerte aanvragen") {
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest) {
           name,
           email,
           phone,
+          address,
           aantalTreden,
           type,
           behandeling,
@@ -98,6 +100,7 @@ export async function POST(req: NextRequest) {
           name,
           email,
           phone,
+          address,
           message,
         }),
       });

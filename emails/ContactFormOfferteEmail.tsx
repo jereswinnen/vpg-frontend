@@ -12,6 +12,7 @@ interface ContactFormOfferteEmailProps {
   name: string;
   email: string;
   phone: string;
+  address?: string;
   aantalTreden?: string;
   type?: string;
   behandeling?: string;
@@ -25,6 +26,7 @@ export function ContactFormOfferteEmail({
   name,
   email,
   phone,
+  address,
   aantalTreden,
   type,
   behandeling,
@@ -60,6 +62,13 @@ export function ContactFormOfferteEmail({
             {phone}
           </Link>
         </Text>
+
+        {address && (
+          <>
+            <Text style={typography.label}>Adres</Text>
+            <Text style={typography.value}>{address}</Text>
+          </>
+        )}
 
         <Hr style={layout.divider} />
 

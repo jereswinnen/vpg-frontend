@@ -55,6 +55,13 @@ export const FORM_FIELDS: FieldConfig[] = [
     required: true,
     autoComplete: "tel",
   },
+  {
+    name: "address",
+    label: "Adres",
+    type: "text",
+    required: true,
+    autoComplete: "street-address",
+  },
 
   // Separator before subject selection
   {
@@ -174,6 +181,7 @@ export type ContactFormData = {
   name: string;
   email: string;
   phone: string;
+  address: string;
   subject: Subject;
   // Algemeen
   message: string;
@@ -226,6 +234,7 @@ export function getInitialFormData(): ContactFormData {
     name: "",
     email: "",
     phone: "",
+    address: "",
     subject: "Algemeen",
     message: "",
     aantalTreden: "",
