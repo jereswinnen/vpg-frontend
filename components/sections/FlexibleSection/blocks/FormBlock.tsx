@@ -14,9 +14,10 @@ export function FormBlock({ block }: FormBlockProps) {
         <div className="flex flex-col gap-2">
           {title && <h2 className="mb-0!">{title}</h2>}
           {subtitle && (
-            <p className="font-[420] text-zinc-600 text-base md:text-lg">
-              {subtitle}
-            </p>
+            <div
+              className="font-[420] text-zinc-600 text-base md:text-lg"
+              dangerouslySetInnerHTML={{ __html: subtitle }}
+            />
           )}
         </div>
       )}
