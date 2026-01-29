@@ -26,7 +26,7 @@ export function SlideshowSection({ section }: SlideshowProps) {
   if (background) {
     return (
       <section className="o-grid--bleed col-span-full grid grid-cols-subgrid py-8 md:py-14 bg-zinc-200">
-        <div className="col-span-full">
+        <div className="col-span-full lg:col-start-2 lg:col-span-7">
           {images.length > 0 ? (
             <SlideshowComponent images={images} variant="fullwidth" />
           ) : (
@@ -41,7 +41,7 @@ export function SlideshowSection({ section }: SlideshowProps) {
   }
 
   return (
-    <section className="col-span-full">
+    <section className="col-span-full lg:col-start-2 lg:col-span-7">
       {images.length > 0 ? (
         <SlideshowComponent images={images} variant="fullwidth" />
       ) : (
