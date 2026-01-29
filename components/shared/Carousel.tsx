@@ -180,7 +180,7 @@ export default function Slideshow({
         <AnimatePresence mode="wait">
           <motion.p
             key={currentIndex}
-            className="mt-2 text-sm text-zinc-600 text-center"
+            className="mt-2 text-sm text-zinc-600"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
