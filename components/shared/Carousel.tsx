@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, type PanInfo } from "motion/react";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
-import { useTracking } from "@/lib/tracking";
 
 const CAROUSEL_INTERVAL = 4000;
 const TRANSITION_DURATION = 0.4;
@@ -33,7 +32,6 @@ export default function Slideshow({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
-  const { track } = useTracking();
 
   const isLoading = !loadedImages.has(currentIndex);
 
@@ -51,33 +49,17 @@ export default function Slideshow({
 
   const handlePrevClick = () => {
     goToPrevious();
-    track("carousel_navigated", {
-      direction: "prev",
-      index: currentIndex === 0 ? images.length - 1 : currentIndex - 1,
-    });
   };
 
   const handleNextClick = () => {
     goToNext();
-    track("carousel_navigated", {
-      direction: "next",
-      index: currentIndex === images.length - 1 ? 0 : currentIndex + 1,
-    });
   };
 
   const handleDragEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.x > SWIPE_THRESHOLD) {
       goToPrevious();
-      track("carousel_navigated", {
-        direction: "prev",
-        index: currentIndex === 0 ? images.length - 1 : currentIndex - 1,
-      });
     } else if (info.offset.x < -SWIPE_THRESHOLD) {
       goToNext();
-      track("carousel_navigated", {
-        direction: "next",
-        index: currentIndex === images.length - 1 ? 0 : currentIndex + 1,
-      });
     }
   };
 
