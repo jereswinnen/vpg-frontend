@@ -56,11 +56,25 @@ export const FORM_FIELDS: FieldConfig[] = [
     autoComplete: "tel",
   },
   {
-    name: "address",
-    label: "Adres",
+    name: "street",
+    label: "Straat en huisnummer",
     type: "text",
     required: true,
     autoComplete: "street-address",
+  },
+  {
+    name: "postalCode",
+    label: "Postcode",
+    type: "text",
+    required: true,
+    autoComplete: "postal-code",
+  },
+  {
+    name: "city",
+    label: "Plaats",
+    type: "text",
+    required: true,
+    autoComplete: "address-level2",
   },
 
   // Separator before subject selection
@@ -181,7 +195,9 @@ export type ContactFormData = {
   name: string;
   email: string;
   phone: string;
-  address: string;
+  street: string;
+  postalCode: string;
+  city: string;
   subject: Subject;
   // Algemeen
   message: string;
@@ -234,7 +250,9 @@ export function getInitialFormData(): ContactFormData {
     name: "",
     email: "",
     phone: "",
-    address: "",
+    street: "",
+    postalCode: "",
+    city: "",
     subject: "Algemeen",
     message: "",
     aantalTreden: "",

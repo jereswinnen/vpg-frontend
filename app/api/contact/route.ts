@@ -38,7 +38,9 @@ export async function POST(req: NextRequest) {
     const name = (form.get("name") as string) || "";
     const email = (form.get("email") as string) || "";
     const phone = (form.get("phone") as string) || "";
-    const address = (form.get("address") as string) || "";
+    const street = (form.get("street") as string) || "";
+    const postalCode = (form.get("postalCode") as string) || "";
+    const city = (form.get("city") as string) || "";
 
     // Send email based on subject
     if (subject === "Offerte aanvragen") {
@@ -68,7 +70,9 @@ export async function POST(req: NextRequest) {
           name,
           email,
           phone,
-          address,
+          street,
+          postalCode,
+          city,
           aantalTreden,
           type,
           behandeling,
@@ -100,7 +104,9 @@ export async function POST(req: NextRequest) {
           name,
           email,
           phone,
-          address,
+          street,
+          postalCode,
+          city,
           message,
         }),
       });

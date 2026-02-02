@@ -12,7 +12,9 @@ interface ContactFormOfferteEmailProps {
   name: string;
   email: string;
   phone: string;
-  address?: string;
+  street?: string;
+  postalCode?: string;
+  city?: string;
   aantalTreden?: string;
   type?: string;
   behandeling?: string;
@@ -26,7 +28,9 @@ export function ContactFormOfferteEmail({
   name,
   email,
   phone,
-  address,
+  street,
+  postalCode,
+  city,
   aantalTreden,
   type,
   behandeling,
@@ -35,6 +39,7 @@ export function ContactFormOfferteEmail({
   hasBestand,
   bestandNaam,
 }: ContactFormOfferteEmailProps) {
+  const fullAddress = street && postalCode && city ? `${street}, ${postalCode} ${city}` : null;
   return (
     <EmailLayout preview={`Nieuwe offerteaanvraag van ${name}`}>
       <Section style={layout.content}>
@@ -63,10 +68,10 @@ export function ContactFormOfferteEmail({
           </Link>
         </Text>
 
-        {address && (
+        {fullAddress && (
           <>
             <Text style={typography.label}>Adres</Text>
-            <Text style={typography.value}>{address}</Text>
+            <Text style={typography.value}>{fullAddress}</Text>
           </>
         )}
 
