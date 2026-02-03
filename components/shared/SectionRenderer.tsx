@@ -4,6 +4,7 @@ import { SplitSection } from "../sections/SplitSection";
 import UspSection from "../sections/UspSection";
 import SolutionsScroller from "../sections/SolutionsScroller";
 import FlexibleSection from "../sections/FlexibleSection";
+import SolutionHighlight from "../sections/SolutionHighlight";
 import type { FlexibleSectionData } from "../sections/FlexibleSection/types";
 
 // Image type with direct URL
@@ -82,6 +83,12 @@ interface SolutionsScrollerSection extends BaseSection {
   subtitle?: string;
 }
 
+interface SolutionHighlightSection extends BaseSection {
+  _type: "solutionHighlight";
+  solutionId?: string;
+  subtitle?: string;
+}
+
 type FlexibleSectionType = FlexibleSectionData;
 
 interface SectionRendererProps {
@@ -139,6 +146,14 @@ export default function SectionRenderer({
               <FlexibleSection
                 key={key}
                 section={section as FlexibleSectionType}
+              />
+            );
+
+          case "solutionHighlight":
+            return (
+              <SolutionHighlight
+                key={key}
+                section={section as SolutionHighlightSection}
               />
             );
 

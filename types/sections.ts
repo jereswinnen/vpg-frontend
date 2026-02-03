@@ -4,7 +4,8 @@ export type SectionType =
   | "splitSection"
   | "uspSection"
   | "solutionsScroller"
-  | "flexibleSection";
+  | "flexibleSection"
+  | "solutionHighlight";
 
 export interface BaseSection {
   _key: string;
@@ -60,6 +61,12 @@ export interface SolutionsScrollerSection extends BaseSection {
   filterSlug?: string;
 }
 
+export interface SolutionHighlightSection extends BaseSection {
+  _type: "solutionHighlight";
+  solutionId?: string;
+  subtitle?: string; // HTML from Tiptap
+}
+
 export interface FlexibleSection extends BaseSection {
   _type: "flexibleSection";
   layout: "1-col" | "2-col-equal" | "2-col-left-wide" | "2-col-right-wide";
@@ -90,7 +97,8 @@ export type Section =
   | SplitSection
   | UspSection
   | SolutionsScrollerSection
-  | FlexibleSection;
+  | FlexibleSection
+  | SolutionHighlightSection;
 
 export function getSectionLabel(type: SectionType): string {
   const labels: Record<SectionType, string> = {
@@ -100,6 +108,7 @@ export function getSectionLabel(type: SectionType): string {
     uspSection: "USP Section",
     solutionsScroller: "Solutions Scroller",
     flexibleSection: "Flexible Section",
+    solutionHighlight: "Realisatie",
   };
   return labels[type];
 }
