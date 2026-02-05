@@ -7,7 +7,7 @@ interface LogoProps {
 export default function Logo({ className = "" }: LogoProps) {
   return (
     <Image
-      src="/logo.png"
+      src="/images/logo.png"
       alt="VPG Logo"
       width={114}
       height={48}
