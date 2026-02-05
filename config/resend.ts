@@ -33,9 +33,14 @@ export const RESEND_CONFIG = {
   // Whether test mode is enabled (development environment)
   isTestMode: TEST_MODE,
 
+  // Recipient address for configurator quote submissions
+  quoteRecipient: TEST_MODE ? DEFAULT_TEST_EMAIL : "info@vpg.be",
+
   // Email subjects
   subjects: {
     contactAlgemeen: "Nieuw contactformulier: Algemeen",
     contactOfferte: "Nieuwe offerteaanvraag via website",
+    quoteCustomer: "Uw offerte aanvraag",
+    quoteAdmin: "Nieuwe configurator offerte",
   },
 } as const;
