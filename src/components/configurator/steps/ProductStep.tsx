@@ -42,6 +42,13 @@ export function ProductStep({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Auto-select when there's only one product
+  useEffect(() => {
+    if (products.length === 1 && !selectedProduct) {
+      onProductChange(products[0].slug);
+    }
+  }, [products, selectedProduct, onProductChange]);
+
   // Fetch questions when product changes
   useEffect(() => {
     if (!selectedProduct) {
@@ -82,27 +89,29 @@ export function ProductStep({
 
   return (
     <div className={cn("flex flex-col gap-8", className)}>
-      {/* Product selector */}
-      <Field className="max-w-md">
-        <FieldLabel htmlFor="product-selector">
-          Welk product zoekt u? *
-        </FieldLabel>
-        <Select
-          value={selectedProduct || ""}
-          onValueChange={onProductChange}
-        >
-          <SelectTrigger id="product-selector" className="w-full">
-            <SelectValue placeholder="Selecteer een product..." />
-          </SelectTrigger>
-          <SelectContent>
-            {products.map((product) => (
-              <SelectItem key={product.slug} value={product.slug}>
-                {product.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
+      {/* Product selector - hidden when only one product */}
+      {products.length > 1 && (
+        <Field className="max-w-md">
+          <FieldLabel htmlFor="product-selector">
+            Welk product zoekt u? *
+          </FieldLabel>
+          <Select
+            value={selectedProduct || ""}
+            onValueChange={onProductChange}
+          >
+            <SelectTrigger id="product-selector" className="w-full">
+              <SelectValue placeholder="Selecteer een product..." />
+            </SelectTrigger>
+            <SelectContent>
+              {products.map((product) => (
+                <SelectItem key={product.slug} value={product.slug}>
+                  {product.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      )}
 
       {/* Loading state */}
       {isLoading && (
