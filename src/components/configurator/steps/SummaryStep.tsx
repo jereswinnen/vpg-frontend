@@ -17,12 +17,6 @@ interface ProductOption {
   name: string;
 }
 
-interface PriceData {
-  min: number;
-  min_formatted: string;
-  range_formatted: string;
-}
-
 interface SummaryStepProps {
   selectedProduct: string | null;
   products: ProductOption[];
@@ -52,59 +46,19 @@ export function SummaryStep({
   const productName =
     products.find((p) => p.slug === selectedProduct)?.name || selectedProduct;
 
-  // Price calculation state
-  const [price, setPrice] = useState<PriceData | null>(null);
-  const [priceLoading, setPriceLoading] = useState(true);
-  const [priceError, setPriceError] = useState<string | null>(null);
-
   // Submission state
   const [submissionStatus, setSubmissionStatus] = useState<
     "idle" | "submitting" | "success" | "error"
   >("idle");
   const [submissionError, setSubmissionError] = useState<string | null>(null);
 
-  // Calculate price on mount
+  // Submit quote on mount
   useEffect(() => {
-    async function fetchPrice() {
-      if (!selectedProduct) {
-        setPriceLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/configurator/calculate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            product_slug: selectedProduct,
-            answers,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Kon prijs niet berekenen");
-        }
-
-        const data = await response.json();
-        setPrice(data.price);
-      } catch (err) {
-        console.error("Error fetching price:", err);
-        setPriceError("Er is iets misgegaan bij het berekenen van de prijs.");
-      } finally {
-        setPriceLoading(false);
-      }
-    }
-
-    fetchPrice();
-  }, [selectedProduct, answers]);
-
-  // Submit quote when price is loaded and not yet submitted
-  useEffect(() => {
-    if (price && submissionStatus === "idle") {
+    if (submissionStatus === "idle") {
       submitQuote();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [price, submissionStatus]);
+  }, []);
 
   // Submit quote function
   const submitQuote = async () => {
@@ -124,7 +78,7 @@ export function SummaryStep({
             name: contactDetails.name,
             email: contactDetails.email,
             phone: contactDetails.phone,
-            address: contactDetails.address,
+            address: `${contactDetails.street}, ${contactDetails.postalCode} ${contactDetails.city}`,
           },
         }),
       });
@@ -187,33 +141,6 @@ export function SummaryStep({
         </div>
       )}
 
-      {/* Price Card */}
-      <Card className="bg-accent-dark text-accent-light">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg opacity-80">Prijsschatting</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {priceLoading ? (
-            <div className="flex items-center gap-2">
-              <Spinner className="size-5" />
-              <span>Prijs berekenen...</span>
-            </div>
-          ) : priceError ? (
-            <p className="text-red-300">{priceError}</p>
-          ) : price ? (
-            <>
-              <p className="text-3xl font-bold">{price.range_formatted}</p>
-              <p className="text-sm opacity-70 mt-2">
-                Dit is een indicatieve vanafprijs. De uiteindelijke prijs is
-                afhankelijk van een plaatsbezoek.
-              </p>
-            </>
-          ) : (
-            <p className="opacity-70">Geen prijs beschikbaar</p>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Configuration Summary */}
       <Card>
         <CardHeader className="pb-4">
@@ -263,7 +190,7 @@ export function SummaryStep({
             <SummaryRow label="Naam" value={contactDetails.name} />
             <SummaryRow label="E-mail" value={contactDetails.email} />
             <SummaryRow label="Telefoon" value={contactDetails.phone} />
-            <SummaryRow label="Adres" value={contactDetails.address} />
+            <SummaryRow label="Adres" value={`${contactDetails.street}, ${contactDetails.postalCode} ${contactDetails.city}`} />
           </dl>
         </CardContent>
       </Card>

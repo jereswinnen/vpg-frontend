@@ -4,7 +4,6 @@ import { resend } from "@/lib/resend";
 import { RESEND_CONFIG, DEFAULT_TEST_EMAIL } from "@/config/resend";
 import {
   calculatePrice,
-  formatPrice,
   createQuoteSubmission,
   getQuestionsForProduct,
 } from "@/lib/configurator";
@@ -64,7 +63,6 @@ interface SubmitRequestBody {
  * POST /api/configurator/submit
  *
  * Submit a quote request from the configurator wizard.
- * - Calculates price
  * - Stores submission in database
  * - Sends quote email to customer
  * - Sends notification email to admin
@@ -98,7 +96,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate price
+    // Calculate price (stored in DB but not shown to users)
     const priceResult = await calculatePrice(
       { product_slug, answers: answers || {} },
       site
@@ -154,10 +152,6 @@ export async function POST(request: NextRequest) {
       contact_address: contact.address,
     });
 
-    // Format price for emails
-    const priceMinFormatted = formatPrice(priceResult.min);
-    const priceMaxFormatted = formatPrice(priceResult.max);
-
     // Send emails in parallel (don't block on failures)
     const emailPromises: Promise<{ success: boolean; error?: string }>[] = [];
 
@@ -173,8 +167,6 @@ export async function POST(request: NextRequest) {
               customerName: contact.name,
               productName,
               configuration: configurationItems,
-              priceMin: priceMinFormatted,
-              priceMax: priceMaxFormatted,
             }),
           });
 
@@ -208,8 +200,6 @@ export async function POST(request: NextRequest) {
               customerAddress: contact.address || "-",
               productName,
               configuration: configurationItems,
-              priceMin: priceMinFormatted,
-              priceMax: priceMaxFormatted,
             }),
           });
 
@@ -234,12 +224,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       submission_id: submission.id,
-      price: {
-        min: priceResult.min,
-        max: priceResult.max,
-        min_formatted: priceMinFormatted,
-        max_formatted: priceMaxFormatted,
-      },
       emails: {
         customer: emailResults[0]?.success ?? false,
         admin: emailResults[1]?.success ?? false,

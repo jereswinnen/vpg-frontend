@@ -10,7 +10,6 @@ import {
 import {
   InfoBox,
   InfoRow,
-  HighlightBox,
   EmailButton,
 } from "@/components/email";
 
@@ -23,20 +22,14 @@ interface QuoteEmailProps {
   customerName: string;
   productName: string;
   configuration: ConfigurationItem[];
-  priceMin: string;
-  priceMax: string;
 }
 
 export function QuoteEmail({
   customerName,
   productName,
   configuration,
-  priceMin,
-  priceMax,
 }: QuoteEmailProps) {
   const contactUrl = "https://vpg.be/contact";
-  const priceRange =
-    priceMin === priceMax ? priceMin : `${priceMin} - ${priceMax}`;
 
   return (
     <EmailLayout preview={`Uw offerte aanvraag voor ${productName}`}>
@@ -52,21 +45,8 @@ export function QuoteEmail({
 
         <Text style={typography.paragraph}>
           Bedankt voor uw offerte aanvraag. Hieronder vindt u een overzicht van
-          uw configuratie en een prijsindicatie.
+          uw configuratie.
         </Text>
-
-        {/* Price Highlight */}
-        <HighlightBox>
-          <Text style={highlightLabel}>Prijsschatting</Text>
-          <Text style={highlightValue}>{priceRange}</Text>
-        </HighlightBox>
-
-        <Text style={disclaimer}>
-          Dit is een indicatieve prijsschatting. De uiteindelijke prijs is
-          afhankelijk van een plaatsbezoek.
-        </Text>
-
-        <Hr style={layout.divider} />
 
         {/* Configuration Summary */}
         <Text style={sectionTitle}>Uw configuratie</Text>
@@ -121,8 +101,6 @@ interface QuoteAdminNotificationProps {
   customerAddress: string;
   productName: string;
   configuration: ConfigurationItem[];
-  priceMin: string;
-  priceMax: string;
 }
 
 export function QuoteAdminNotification({
@@ -132,12 +110,7 @@ export function QuoteAdminNotification({
   customerAddress,
   productName,
   configuration,
-  priceMin,
-  priceMax,
 }: QuoteAdminNotificationProps) {
-  const priceRange =
-    priceMin === priceMax ? priceMin : `${priceMin} - ${priceMax}`;
-
   return (
     <EmailLayout
       preview={`Nieuwe offerte aanvraag: ${customerName} - ${productName}`}
@@ -145,14 +118,6 @@ export function QuoteAdminNotification({
       <Section style={layout.content}>
         <Text style={typography.heading}>Nieuwe offerte aanvraag</Text>
         <Text style={typography.subheading}>Via de online configurator</Text>
-
-        <Hr style={layout.divider} />
-
-        {/* Price Highlight */}
-        <HighlightBox>
-          <Text style={highlightLabel}>Prijsschatting</Text>
-          <Text style={highlightValue}>{priceRange}</Text>
-        </HighlightBox>
 
         <Hr style={layout.divider} />
 
@@ -221,30 +186,6 @@ const sectionTitle = {
   fontWeight: "600" as const,
   color: colors.primary,
   margin: "0 0 16px 0",
-};
-
-const highlightLabel = {
-  fontSize: "12px",
-  fontWeight: "600" as const,
-  color: colors.primary,
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.5px",
-  margin: "0 0 4px 0",
-  opacity: 0.7,
-};
-
-const highlightValue = {
-  fontSize: "24px",
-  color: colors.primary,
-  margin: "0",
-  fontWeight: "600" as const,
-};
-
-const disclaimer = {
-  fontSize: "12px",
-  color: colors.muted,
-  margin: "12px 0 0 0",
-  fontStyle: "italic" as const,
 };
 
 const signatureStyle = {
