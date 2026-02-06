@@ -9,6 +9,7 @@ import {
   Text,
 } from "@react-email/components";
 import * as React from "react";
+import { EmailLogo } from "@/components/email/Logo";
 
 // VPG Brand colors (from globals.css)
 export const colors = {
@@ -98,7 +99,7 @@ export function EmailLayout({ preview, children }: EmailLayoutProps) {
         <Container style={container}>
           <Section style={header}>
             <Link href="https://vpg.be" style={logoLink}>
-              <Text style={logoText}>VPG</Text>
+              <EmailLogo />
             </Link>
           </Section>
           {children}
@@ -131,14 +132,6 @@ const header = {
 
 const logoLink = {
   textDecoration: "none",
-};
-
-const logoText = {
-  fontSize: "28px",
-  fontWeight: "700" as const,
-  color: colors.primary,
-  margin: "0",
-  letterSpacing: "-0.02em",
 };
 
 const footer = {
