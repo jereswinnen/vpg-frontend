@@ -88,6 +88,9 @@ export function Wizard({
 
   const hasConfigSteps = configSteps.length > 0;
 
+  // Skip product step when single product + config steps (nothing to show)
+  const skipProductStep = products.length === 1 && hasConfigSteps;
+
   // Total steps: product + N config steps + contact + summary
   // Without config steps: product + contact + summary = 3
   const totalSteps = hasConfigSteps ? 3 + configSteps.length : 3;
@@ -97,13 +100,23 @@ export function Wizard({
   // Progress bar steps
   const progressSteps = useMemo(() => {
     if (!hasConfigSteps) return undefined; // use default icon-based steps
+    const steps = skipProductStep
+      ? [] // omit product step when auto-skipped
+      : [{ number: 1, label: "Product" }];
     return [
-      { number: 1, label: "Product" },
+      ...steps,
       ...configSteps.map((s, i) => ({ number: 2 + i, label: s.name })),
       { number: contactStepNum, label: "Gegevens" },
       { number: summaryStepNum, label: "Overzicht" },
     ];
-  }, [hasConfigSteps, configSteps, contactStepNum, summaryStepNum]);
+  }, [hasConfigSteps, skipProductStep, configSteps, contactStepNum, summaryStepNum]);
+
+  // Auto-advance past empty product step once config steps load
+  useEffect(() => {
+    if (skipProductStep && currentStep === 1) {
+      setCurrentStep(2);
+    }
+  }, [skipProductStep, currentStep]);
 
   // ==========================================================================
   // Analytics: Track wizard started on mount
@@ -297,7 +310,8 @@ export function Wizard({
 
   const handleBack = () => {
     setValidationError(null);
-    if (currentStep > 1) {
+    const minStep = skipProductStep ? 2 : 1;
+    if (currentStep > minStep) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -371,7 +385,7 @@ export function Wizard({
           <button
             type="button"
             onClick={handleBack}
-            disabled={currentStep === 1}
+            disabled={currentStep <= (skipProductStep ? 2 : 1)}
             className={actionVariants({ variant: "secondary" })}
           >
             Terug
