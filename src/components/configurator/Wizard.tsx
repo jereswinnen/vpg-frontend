@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useTracking } from "@/lib/tracking";
 import { actionVariants } from "@/components/shared/Action";
@@ -8,6 +8,7 @@ import { ProgressBar } from "./ProgressBar";
 import { ProductStep } from "./steps/ProductStep";
 import { ContactStep, validateContactDetails } from "./steps/ContactStep";
 import { SummaryStep } from "./steps/SummaryStep";
+import { QuestionStep, type WizardStep } from "./steps/QuestionStep";
 import type { QuestionConfig } from "./QuestionField";
 
 // =============================================================================
@@ -62,7 +63,10 @@ export function Wizard({
   const [questions, setQuestions] = useState<QuestionConfig[]>([]);
   const [questionsLoading, setQuestionsLoading] = useState(false);
 
-  // Step 2: Contact details
+  // Dynamic config steps from API
+  const [configSteps, setConfigSteps] = useState<WizardStep[]>([]);
+
+  // Contact details
   const [contactDetails, setContactDetails] = useState<ContactDetails>({
     name: "",
     email: "",
@@ -75,8 +79,31 @@ export function Wizard({
   // Validation state
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Submission complete state (to hide navigation on step 3)
+  // Submission complete state (to hide navigation on summary step)
   const [submissionComplete, setSubmissionComplete] = useState(false);
+
+  // ==========================================================================
+  // Computed step layout
+  // ==========================================================================
+
+  const hasConfigSteps = configSteps.length > 0;
+
+  // Total steps: product + N config steps + contact + summary
+  // Without config steps: product + contact + summary = 3
+  const totalSteps = hasConfigSteps ? 3 + configSteps.length : 3;
+  const contactStepNum = hasConfigSteps ? 2 + configSteps.length : 2;
+  const summaryStepNum = totalSteps;
+
+  // Progress bar steps
+  const progressSteps = useMemo(() => {
+    if (!hasConfigSteps) return undefined; // use default icon-based steps
+    return [
+      { number: 1, label: "Product" },
+      ...configSteps.map((s, i) => ({ number: 2 + i, label: s.name })),
+      { number: contactStepNum, label: "Gegevens" },
+      { number: summaryStepNum, label: "Overzicht" },
+    ];
+  }, [hasConfigSteps, configSteps, contactStepNum, summaryStepNum]);
 
   // ==========================================================================
   // Analytics: Track wizard started on mount
@@ -97,9 +124,9 @@ export function Wizard({
 
   const handleProductChange = useCallback((product: string) => {
     setSelectedProduct(product);
-    // Clear answers and questions when product changes
     setAnswers({});
     setQuestions([]);
+    setConfigSteps([]);
     setQuestionsLoading(true);
     setValidationError(null);
   }, []);
@@ -107,6 +134,10 @@ export function Wizard({
   const handleQuestionsLoaded = useCallback((loadedQuestions: QuestionConfig[]) => {
     setQuestions(loadedQuestions);
     setQuestionsLoading(false);
+  }, []);
+
+  const handleStepsLoaded = useCallback((steps: WizardStep[]) => {
+    setConfigSteps(steps);
   }, []);
 
   const handleAnswerChange = useCallback(
@@ -131,13 +162,11 @@ export function Wizard({
     }) => {
       setSubmissionComplete(true);
 
-      // Track quote sent
       track("configurator_quote_sent", {
         product: selectedProduct,
         submission_id: data.submissionId,
       });
 
-      // Track appointment booked if applicable
       if (data.appointmentDate && data.appointmentTime) {
         track("configurator_appointment_booked", {
           product: selectedProduct,
@@ -154,21 +183,30 @@ export function Wizard({
   // ==========================================================================
 
   /**
-   * Validate that all required questions have been answered
-   * Returns error message or null if valid
+   * Get the questions for the current step (config step or all questions)
    */
-  const validateRequiredQuestions = (): string | null => {
-    for (const question of questions) {
+  const getCurrentStepQuestions = (): QuestionConfig[] => {
+    if (hasConfigSteps && currentStep >= 2 && currentStep < contactStepNum) {
+      const stepIndex = currentStep - 2;
+      return configSteps[stepIndex]?.questions || [];
+    }
+    // Step 1 (product step without config steps) uses all questions
+    if (!hasConfigSteps && currentStep === 1) {
+      return questions;
+    }
+    return [];
+  };
+
+  /**
+   * Validate required questions for a given list
+   */
+  const validateQuestions = (questionList: QuestionConfig[]): string | null => {
+    for (const question of questionList) {
       if (!question.required) continue;
-
       const answer = answers[question.question_key];
-
-      // Check if answer is empty
       if (answer === undefined || answer === null || answer === "") {
         return `Vul "${question.label}" in`;
       }
-
-      // For arrays (multi-select), check if at least one option is selected
       if (Array.isArray(answer) && answer.length === 0) {
         return `Selecteer minstens één optie voor "${question.label}"`;
       }
@@ -178,9 +216,16 @@ export function Wizard({
 
   const canGoNext = (): boolean => {
     if (currentStep === 1) {
-      return selectedProduct !== null && !questionsLoading && validateRequiredQuestions() === null;
+      if (!selectedProduct || questionsLoading) return false;
+      if (!hasConfigSteps) {
+        return validateQuestions(questions) === null;
+      }
+      return true; // Product selected is enough when config steps exist
     }
-    if (currentStep === 2) {
+    if (hasConfigSteps && currentStep >= 2 && currentStep < contactStepNum) {
+      return validateQuestions(getCurrentStepQuestions()) === null;
+    }
+    if (currentStep === contactStepNum) {
       return validateContactDetails(contactDetails) === null;
     }
     return false;
@@ -195,15 +240,17 @@ export function Wizard({
         return;
       }
 
-      const questionError = validateRequiredQuestions();
-      if (questionError) {
-        setValidationError(questionError);
-        return;
+      if (!hasConfigSteps) {
+        const questionError = validateQuestions(questions);
+        if (questionError) {
+          setValidationError(questionError);
+          return;
+        }
       }
 
-      // Track step 1 completed
       track("configurator_step_completed", {
         step: 1,
+        step_name: "Product",
         product: selectedProduct,
       });
 
@@ -211,20 +258,39 @@ export function Wizard({
       return;
     }
 
-    if (currentStep === 2) {
+    // Config steps (2 through contactStepNum - 1)
+    if (hasConfigSteps && currentStep >= 2 && currentStep < contactStepNum) {
+      const questionError = validateQuestions(getCurrentStepQuestions());
+      if (questionError) {
+        setValidationError(questionError);
+        return;
+      }
+
+      const stepIndex = currentStep - 2;
+      track("configurator_step_completed", {
+        step: currentStep,
+        step_name: configSteps[stepIndex]?.name,
+        product: selectedProduct,
+      });
+
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+
+    if (currentStep === contactStepNum) {
       const error = validateContactDetails(contactDetails);
       if (error) {
         setValidationError(error);
         return;
       }
 
-      // Track step 2 completed
       track("configurator_step_completed", {
-        step: 2,
+        step: currentStep,
+        step_name: "Gegevens",
         product: selectedProduct,
       });
 
-      setCurrentStep(3);
+      setCurrentStep(summaryStepNum);
       return;
     }
   };
@@ -240,32 +306,48 @@ export function Wizard({
   // Render
   // ==========================================================================
 
+  // Determine what to render for the current step
+  const isProductStep = currentStep === 1;
+  const isConfigStep = hasConfigSteps && currentStep >= 2 && currentStep < contactStepNum;
+  const isContactStep = currentStep === contactStepNum;
+  const isSummaryStep = currentStep === summaryStepNum;
+
   return (
     <div className={cn("flex flex-col gap-8", className)}>
       {/* Progress Bar */}
-      <ProgressBar currentStep={currentStep} />
+      <ProgressBar currentStep={currentStep} steps={progressSteps} />
 
       {/* Step Content */}
       <div className="min-h-[400px]">
-        {currentStep === 1 && (
+        {isProductStep && (
           <ProductStep
             products={products}
             selectedProduct={selectedProduct}
             answers={answers}
+            showQuestions={!hasConfigSteps}
             onProductChange={handleProductChange}
             onAnswerChange={handleAnswerChange}
             onQuestionsLoaded={handleQuestionsLoaded}
+            onStepsLoaded={handleStepsLoaded}
           />
         )}
 
-        {currentStep === 2 && (
+        {isConfigStep && (
+          <QuestionStep
+            step={configSteps[currentStep - 2]}
+            answers={answers}
+            onAnswerChange={handleAnswerChange}
+          />
+        )}
+
+        {isContactStep && (
           <ContactStep
             contactDetails={contactDetails}
             onChange={handleContactChange}
           />
         )}
 
-        {currentStep === 3 && (
+        {isSummaryStep && (
           <SummaryStep
             selectedProduct={selectedProduct}
             products={products}
@@ -283,8 +365,8 @@ export function Wizard({
         </div>
       )}
 
-      {/* Navigation Buttons - Hide on step 3 when submission is complete */}
-      {!(currentStep === 3 && submissionComplete) && (
+      {/* Navigation Buttons */}
+      {!(isSummaryStep && submissionComplete) && (
         <div className="flex items-center justify-start gap-3">
           <button
             type="button"
@@ -295,7 +377,7 @@ export function Wizard({
             Terug
           </button>
 
-          {currentStep < 3 && (
+          {currentStep < summaryStepNum && (
             <button
               type="button"
               onClick={handleNext}

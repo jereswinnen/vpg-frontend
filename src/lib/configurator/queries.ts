@@ -13,6 +13,7 @@ const sql = neon(process.env.DATABASE_URL!);
 export const CONFIGURATOR_CACHE_TAGS = {
   questions: "configurator-questions",
   pricing: "configurator-pricing",
+  steps: "configurator-steps",
 } as const;
 
 // Default site slug
