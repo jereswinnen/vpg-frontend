@@ -1,11 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import {
-  BlocksIcon,
-  CircleUserRoundIcon,
-  NotepadTextDashedIcon,
-} from "lucide-react";
+import { Check } from "lucide-react";
 
 interface ProgressStep {
   number: number;
@@ -18,83 +14,44 @@ interface ProgressBarProps {
   className?: string;
 }
 
-const DEFAULT_STEPS: (ProgressStep & { icon: typeof BlocksIcon })[] = [
-  { number: 1, label: "Configuratie", icon: BlocksIcon },
-  { number: 2, label: "Gegevens", icon: CircleUserRoundIcon },
-  { number: 3, label: "Overzicht", icon: NotepadTextDashedIcon },
+const DEFAULT_STEPS: ProgressStep[] = [
+  { number: 1, label: "Configuratie" },
+  { number: 2, label: "Gegevens" },
+  { number: 3, label: "Overzicht" },
 ];
 
 export function ProgressBar({
   currentStep,
-  steps,
+  steps = DEFAULT_STEPS,
   className,
 }: ProgressBarProps) {
-  // Use default icon-based steps when no dynamic steps provided
-  if (!steps) {
-    return (
-      <nav aria-label="Progress" className={cn("flex gap-6", className)}>
-        {DEFAULT_STEPS.map((step) => {
-          const Icon = step.icon;
-          const isActive = step.number === currentStep;
-          const isCompleted = step.number < currentStep;
-
-          return (
-            <div key={step.number} className="flex-1 flex flex-col gap-3">
-              <div
-                className={cn(
-                  "flex items-center gap-1.5 text-sm",
-                  isCompleted && "text-accent-dark",
-                  isActive && "text-zinc-800 font-medium",
-                  !isActive && !isCompleted && "text-zinc-600 font-normal"
-                )}
-              >
-                <Icon className="size-4" />
-                <span>{step.label}</span>
-              </div>
-              <div
-                className={cn(
-                  "h-0.5",
-                  isCompleted && "bg-accent-light",
-                  isActive && "bg-zinc-500",
-                  !isActive && !isCompleted && "bg-zinc-200"
-                )}
-                aria-current={isActive ? "step" : undefined}
-              />
-            </div>
-          );
-        })}
-      </nav>
-    );
-  }
-
-  // Dynamic steps: use step numbers instead of icons
   return (
-    <nav aria-label="Progress" className={cn("flex gap-6", className)}>
+    <nav
+      aria-label="Progress"
+      className={cn("flex flex-col gap-0.5 text-right", className)}
+    >
       {steps.map((step) => {
         const isActive = step.number === currentStep;
         const isCompleted = step.number < currentStep;
 
         return (
-          <div key={step.number} className="flex-1 flex flex-col gap-3">
-            <div
-              className={cn(
-                "flex items-center gap-1.5 text-sm",
-                isCompleted && "text-accent-dark",
-                isActive && "text-zinc-800 font-medium",
-                !isActive && !isCompleted && "text-zinc-600 font-normal"
-              )}
-            >
-              <span className="truncate">{step.label}</span>
-            </div>
-            <div
-              className={cn(
-                "h-0.5",
-                isCompleted && "bg-accent-light",
-                isActive && "bg-zinc-500",
-                !isActive && !isCompleted && "bg-zinc-200"
-              )}
-              aria-current={isActive ? "step" : undefined}
-            />
+          <div
+            key={step.number}
+            className={cn(
+              "flex items-center justify-end gap-1.5 py-1 text-[13px] transition-colors",
+              isCompleted && "text-emerald-500",
+              isActive && "text-zinc-900 font-medium",
+              !isActive && !isCompleted && "text-zinc-300",
+            )}
+            aria-current={isActive ? "step" : undefined}
+          >
+            {isCompleted ? (
+              <Check className="size-4 shrink-0" strokeWidth={2.5} />
+            ) : isActive ? (
+              <span className="size-[6px] shrink-0 rounded-full bg-zinc-900" />
+            ) : null}
+
+            <span>{step.label}</span>
           </div>
         );
       })}
