@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     }
 
     const cacheHeaders = {
-      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=300",
     };
 
     // If no questions in database, return empty
