@@ -23,6 +23,9 @@ export const CACHE_TAGS = {
 // Site slug for VPG
 const SITE_SLUG = "vpg";
 
+// Cache key version — bump to bust stale Vercel data cache entries
+const CACHE_V = "v2";
+
 /**
  * Get site ID from slug (cached)
  */
@@ -68,7 +71,7 @@ async function _getHomepage(): Promise<Page | null> {
 }
 
 export const getHomepage = () =>
-  unstable_cache(_getHomepage, [`homepage-${SITE_SLUG}`], {
+  unstable_cache(_getHomepage, [`homepage-${SITE_SLUG}-${CACHE_V}`], {
     tags: [CACHE_TAGS.pages],
     revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })();
@@ -100,7 +103,7 @@ async function _getPageBySlug(slug: string): Promise<Page | null> {
 }
 
 export const getPageBySlug = (slug: string) =>
-  unstable_cache(_getPageBySlug, [`page-${SITE_SLUG}-${slug}`], {
+  unstable_cache(_getPageBySlug, [`page-${SITE_SLUG}-${slug}-${CACHE_V}`], {
     tags: [CACHE_TAGS.pages],
     revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })(slug);
@@ -148,7 +151,7 @@ async function _getAllSolutions(): Promise<SolutionListItem[]> {
 }
 
 export const getAllSolutions = () =>
-  unstable_cache(_getAllSolutions, [`all-solutions-${SITE_SLUG}`], {
+  unstable_cache(_getAllSolutions, [`all-solutions-${SITE_SLUG}-${CACHE_V}`], {
     tags: [CACHE_TAGS.solutions],
     revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })();
@@ -190,7 +193,7 @@ async function _getSolutionBySlug(slug: string): Promise<Solution | null> {
 }
 
 export const getSolutionBySlug = (slug: string) =>
-  unstable_cache(_getSolutionBySlug, [`solution-${SITE_SLUG}-${slug}`], {
+  unstable_cache(_getSolutionBySlug, [`solution-${SITE_SLUG}-${slug}-${CACHE_V}`], {
     tags: [CACHE_TAGS.solutions],
     revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })(slug);
@@ -274,7 +277,7 @@ async function _getNavigation(
 }
 
 export const getNavigation = (location: "header" | "footer") =>
-  unstable_cache(_getNavigation, [`navigation-${SITE_SLUG}-${location}`], {
+  unstable_cache(_getNavigation, [`navigation-${SITE_SLUG}-${location}-${CACHE_V}`], {
     tags: [CACHE_TAGS.navigation],
     revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })(location);
@@ -303,7 +306,7 @@ async function _getFilterCategories(): Promise<FilterCategory[]> {
 }
 
 export const getFilterCategories = () =>
-  unstable_cache(_getFilterCategories, [`filter-categories-${SITE_SLUG}`], {
+  unstable_cache(_getFilterCategories, [`filter-categories-${SITE_SLUG}-${CACHE_V}`], {
     tags: [CACHE_TAGS.filters],
     revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })();
@@ -324,7 +327,7 @@ async function _getSiteParameters(): Promise<SiteParameters | null> {
 }
 
 export const getSiteParameters = () =>
-  unstable_cache(_getSiteParameters, [`site-parameters-${SITE_SLUG}`], {
+  unstable_cache(_getSiteParameters, [`site-parameters-${SITE_SLUG}-${CACHE_V}`], {
     tags: [CACHE_TAGS.siteParameters],
     revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })();

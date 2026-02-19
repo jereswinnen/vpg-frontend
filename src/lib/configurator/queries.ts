@@ -19,6 +19,9 @@ export const CONFIGURATOR_CACHE_TAGS = {
 // Default site slug
 const DEFAULT_SITE_SLUG = "vpg";
 
+// Cache key version — bump to bust stale Vercel data cache entries
+const CACHE_V = "v2";
+
 // =============================================================================
 // Site ID Helper
 // =============================================================================
@@ -78,7 +81,7 @@ export const getQuestionsForProduct = (
 ) =>
   unstable_cache(
     _getQuestionsForProduct,
-    [`configurator-questions-${siteSlug}-${productSlug || "all"}`],
+    [`configurator-questions-${siteSlug}-${productSlug || "all"}-${CACHE_V}`],
     {
       tags: [CONFIGURATOR_CACHE_TAGS.questions],
       revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
@@ -113,7 +116,7 @@ export const getQuestionsForCategory = (
 ) =>
   unstable_cache(
     _getQuestionsForCategory,
-    [`configurator-questions-category-${siteSlug}-${categorySlug}`],
+    [`configurator-questions-category-${siteSlug}-${categorySlug}-${CACHE_V}`],
     {
       tags: [CONFIGURATOR_CACHE_TAGS.questions],
       revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
@@ -150,7 +153,7 @@ export const getPricingForProduct = (
 ) =>
   unstable_cache(
     _getPricingForProduct,
-    [`configurator-pricing-${siteSlug}-${productSlug}`],
+    [`configurator-pricing-${siteSlug}-${productSlug}-${CACHE_V}`],
     {
       tags: [CONFIGURATOR_CACHE_TAGS.pricing],
       revalidate: 300,
@@ -184,7 +187,7 @@ export const getPricingForCategory = (
 ) =>
   unstable_cache(
     _getPricingForCategory,
-    [`configurator-pricing-category-${siteSlug}-${categorySlug}`],
+    [`configurator-pricing-category-${siteSlug}-${categorySlug}-${CACHE_V}`],
     {
       tags: [CONFIGURATOR_CACHE_TAGS.pricing],
       revalidate: 300,

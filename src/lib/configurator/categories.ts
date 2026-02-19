@@ -23,6 +23,9 @@ export const CATEGORIES_CACHE_TAG = "configurator-categories";
 // Default site slug
 const DEFAULT_SITE_SLUG = "vpg";
 
+// Cache key version — bump to bust stale Vercel data cache entries
+const CACHE_V = "v2";
+
 // =============================================================================
 // Site ID Helper
 // =============================================================================
@@ -63,7 +66,7 @@ async function _getCategoriesForSite(
 export const getCategoriesForSite = (siteSlug: string = DEFAULT_SITE_SLUG) =>
   unstable_cache(
     _getCategoriesForSite,
-    [`configurator-categories-${siteSlug}`],
+    [`configurator-categories-${siteSlug}-${CACHE_V}`],
     {
       tags: [CATEGORIES_CACHE_TAG],
       revalidate: 300,
@@ -96,7 +99,7 @@ export const getCategoryBySlug = (
 ) =>
   unstable_cache(
     _getCategoryBySlug,
-    [`configurator-category-slug-${siteSlug}-${slug}`],
+    [`configurator-category-slug-${siteSlug}-${slug}-${CACHE_V}`],
     {
       tags: [CATEGORIES_CACHE_TAG],
       revalidate: 300,

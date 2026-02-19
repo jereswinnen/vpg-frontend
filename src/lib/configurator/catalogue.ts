@@ -10,6 +10,9 @@ export const CATALOGUE_CACHE_TAG = "configurator-catalogue";
 // Default site slug
 const DEFAULT_SITE_SLUG = "vpg";
 
+// Cache key version — bump to bust stale Vercel data cache entries
+const CACHE_V = "v2";
+
 // =============================================================================
 // Site ID Helper
 // =============================================================================
@@ -50,7 +53,7 @@ async function _getCatalogueItemsForSite(
 export const getCatalogueItemsForSite = (siteSlug: string = DEFAULT_SITE_SLUG) =>
   unstable_cache(
     _getCatalogueItemsForSite,
-    [`configurator-catalogue-${siteSlug}`],
+    [`configurator-catalogue-${siteSlug}-${CACHE_V}`],
     {
       tags: [CATALOGUE_CACHE_TAG],
       revalidate: 300,
