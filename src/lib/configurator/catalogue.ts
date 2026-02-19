@@ -53,6 +53,6 @@ export const getCatalogueItemsForSite = (siteSlug: string = DEFAULT_SITE_SLUG) =
     [`configurator-catalogue-${siteSlug}`],
     {
       tags: [CATALOGUE_CACHE_TAG],
-      revalidate: 60,
+      revalidate: 300,
     }
   )(siteSlug);

@@ -70,7 +70,7 @@ async function _getHomepage(): Promise<Page | null> {
 export const getHomepage = () =>
   unstable_cache(_getHomepage, [`homepage-${SITE_SLUG}`], {
     tags: [CACHE_TAGS.pages],
-    revalidate: false, // Only revalidate via revalidateTag() when admin publishes
+    revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })();
 
 async function _getPageBySlug(slug: string): Promise<Page | null> {
@@ -102,7 +102,7 @@ async function _getPageBySlug(slug: string): Promise<Page | null> {
 export const getPageBySlug = (slug: string) =>
   unstable_cache(_getPageBySlug, [`page-${SITE_SLUG}-${slug}`], {
     tags: [CACHE_TAGS.pages],
-    revalidate: false, // Only revalidate via revalidateTag() when admin publishes
+    revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })(slug);
 
 // =============================================================================
@@ -150,7 +150,7 @@ async function _getAllSolutions(): Promise<SolutionListItem[]> {
 export const getAllSolutions = () =>
   unstable_cache(_getAllSolutions, [`all-solutions-${SITE_SLUG}`], {
     tags: [CACHE_TAGS.solutions],
-    revalidate: false, // Only revalidate via revalidateTag() when admin publishes
+    revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })();
 
 async function _getSolutionBySlug(slug: string): Promise<Solution | null> {
@@ -192,7 +192,7 @@ async function _getSolutionBySlug(slug: string): Promise<Solution | null> {
 export const getSolutionBySlug = (slug: string) =>
   unstable_cache(_getSolutionBySlug, [`solution-${SITE_SLUG}-${slug}`], {
     tags: [CACHE_TAGS.solutions],
-    revalidate: false, // Only revalidate via revalidateTag() when admin publishes
+    revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })(slug);
 
 // =============================================================================
@@ -276,7 +276,7 @@ async function _getNavigation(
 export const getNavigation = (location: "header" | "footer") =>
   unstable_cache(_getNavigation, [`navigation-${SITE_SLUG}-${location}`], {
     tags: [CACHE_TAGS.navigation],
-    revalidate: false, // Only revalidate via revalidateTag() when admin publishes
+    revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })(location);
 
 async function _getFilterCategories(): Promise<FilterCategory[]> {
@@ -305,7 +305,7 @@ async function _getFilterCategories(): Promise<FilterCategory[]> {
 export const getFilterCategories = () =>
   unstable_cache(_getFilterCategories, [`filter-categories-${SITE_SLUG}`], {
     tags: [CACHE_TAGS.filters],
-    revalidate: false, // Only revalidate via revalidateTag() when admin publishes
+    revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })();
 
 // =============================================================================
@@ -326,7 +326,7 @@ async function _getSiteParameters(): Promise<SiteParameters | null> {
 export const getSiteParameters = () =>
   unstable_cache(_getSiteParameters, [`site-parameters-${SITE_SLUG}`], {
     tags: [CACHE_TAGS.siteParameters],
-    revalidate: false, // Only revalidate via revalidateTag() when admin publishes
+    revalidate: 300, // Fallback: refresh every 5 minutes + on-demand via revalidateTag()
   })();
 
 // =============================================================================

@@ -85,7 +85,7 @@ export const getStepsForCategory = (
     [`configurator-steps-category-${siteSlug}-${categorySlug}`],
     {
       tags: [STEPS_CACHE_TAG],
-      revalidate: false,
+      revalidate: 300,
     }
   )(categorySlug, siteSlug);
 
