@@ -1,7 +1,9 @@
 "use client";
 
+import { useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { FieldGroup } from "@/components/ui/field";
+import { isQuestionVisible } from "@/lib/configurator/visibility";
 import { QuestionField, type QuestionConfig } from "../QuestionField";
 import type { WizardAnswers } from "../Wizard";
 
@@ -25,6 +27,43 @@ export function QuestionStep({
   onAnswerChange,
   className,
 }: QuestionStepProps) {
+  const visibleQuestions = useMemo(
+    () =>
+      step.questions
+        .filter((q) => isQuestionVisible(q.visibility_rules, answers))
+        .map((q) => {
+          if (!q.options) return q;
+          const visibleOpts = q.options.filter((opt) =>
+            isQuestionVisible(opt.visibility_rules, answers),
+          );
+          return visibleOpts.length === q.options.length
+            ? q
+            : { ...q, options: visibleOpts };
+        }),
+    [step.questions, answers],
+  );
+
+  const handleAnswerChange = useCallback(
+    (key: string, value: WizardAnswers[string]) => {
+      onAnswerChange(key, value);
+
+      // Smooth-scroll to the next question for single-select answers
+      const q = visibleQuestions.find((q) => q.question_key === key);
+      if (!q || q.type !== "single-select" || value === undefined) return;
+
+      const idx = visibleQuestions.indexOf(q);
+      const next = visibleQuestions[idx + 1];
+      if (!next) return;
+
+      requestAnimationFrame(() => {
+        document
+          .getElementById(`question-${next.question_key}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    },
+    [onAnswerChange, visibleQuestions],
+  );
+
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       <div>
@@ -34,15 +73,16 @@ export function QuestionStep({
         )}
       </div>
 
-      {step.questions.length > 0 && (
+      {visibleQuestions.length > 0 && (
         <FieldGroup>
-          {step.questions.map((question) => (
-            <QuestionField
-              key={question.question_key}
-              question={question}
-              value={answers[question.question_key]}
-              onChange={onAnswerChange}
-            />
+          {visibleQuestions.map((question) => (
+            <div key={question.question_key} id={`question-${question.question_key}`}>
+              <QuestionField
+                question={question}
+                value={answers[question.question_key]}
+                onChange={handleAnswerChange}
+              />
+            </div>
           ))}
         </FieldGroup>
       )}

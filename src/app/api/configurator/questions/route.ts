@@ -50,6 +50,7 @@ function mapQuestionForFrontend(question: ConfiguratorQuestion) {
     options: question.options,
     required: question.required,
     description: question.subtitle, // Map subtitle -> description for frontend
+    visibility_rules: question.visibility_rules || null,
   };
 }
 

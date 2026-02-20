@@ -75,6 +75,7 @@ export async function calculatePrice(
       price_per_unit_min: null,
       price_per_unit_max: null,
       step_id: null,
+      visibility_rules: null,
       site_id: "default",
       created_at: new Date(),
       updated_at: new Date(),

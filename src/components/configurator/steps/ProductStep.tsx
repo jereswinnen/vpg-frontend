@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Field, FieldLabel, FieldGroup } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
+import { isQuestionVisible } from "@/lib/configurator/visibility";
 import { QuestionField, type QuestionConfig } from "../QuestionField";
 import type { WizardAnswers } from "../Wizard";
 import type { WizardStep } from "./QuestionStep";
@@ -101,6 +102,42 @@ export function ProductStep({
     fetchQuestions();
   }, [selectedProduct]);
 
+  const visibleQuestions = useMemo(
+    () =>
+      questions
+        .filter((q) => isQuestionVisible(q.visibility_rules, answers))
+        .map((q) => {
+          if (!q.options) return q;
+          const visibleOpts = q.options.filter((opt) =>
+            isQuestionVisible(opt.visibility_rules, answers),
+          );
+          return visibleOpts.length === q.options.length
+            ? q
+            : { ...q, options: visibleOpts };
+        }),
+    [questions, answers],
+  );
+
+  const handleAnswerChange = useCallback(
+    (key: string, value: WizardAnswers[string]) => {
+      onAnswerChange(key, value);
+
+      const q = visibleQuestions.find((q) => q.question_key === key);
+      if (!q || q.type !== "single-select" || value === undefined) return;
+
+      const idx = visibleQuestions.indexOf(q);
+      const next = visibleQuestions[idx + 1];
+      if (!next) return;
+
+      requestAnimationFrame(() => {
+        document
+          .getElementById(`question-${next.question_key}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    },
+    [onAnswerChange, visibleQuestions],
+  );
+
   return (
     <div className={cn("flex flex-col gap-8", className)}>
       {/* Product selector - hidden when only one product */}
@@ -143,21 +180,22 @@ export function ProductStep({
       )}
 
       {/* Dynamic questions (only when showQuestions is true, i.e. no config steps) */}
-      {showQuestions && !isLoading && !error && questions.length > 0 && (
+      {showQuestions && !isLoading && !error && visibleQuestions.length > 0 && (
         <FieldGroup>
-          {questions.map((question) => (
-            <QuestionField
-              key={question.question_key}
-              question={question}
-              value={answers[question.question_key]}
-              onChange={onAnswerChange}
-            />
+          {visibleQuestions.map((question) => (
+            <div key={question.question_key} id={`question-${question.question_key}`}>
+              <QuestionField
+                question={question}
+                value={answers[question.question_key]}
+                onChange={handleAnswerChange}
+              />
+            </div>
           ))}
         </FieldGroup>
       )}
 
       {/* Empty state when product selected but no questions */}
-      {showQuestions && !isLoading && !error && selectedProduct && questions.length === 0 && (
+      {showQuestions && !isLoading && !error && selectedProduct && visibleQuestions.length === 0 && (
         <p className="text-sm text-zinc-500">
           Geen aanvullende vragen voor dit product.
         </p>
