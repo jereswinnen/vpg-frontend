@@ -47,18 +47,6 @@ function formatAnswerValue(
   return String(value);
 }
 
-interface SubmitRequestBody {
-  product_slug: string;
-  answers: Record<string, string | string[] | number>;
-  contact: {
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-  };
-  site?: string;
-}
-
 /**
  * POST /api/configurator/submit
  *
@@ -69,8 +57,20 @@ interface SubmitRequestBody {
  */
 export async function POST(request: NextRequest) {
   try {
-    const body: SubmitRequestBody = await request.json();
-    const { product_slug, answers, contact, site = "vpg" } = body;
+    const form = await request.formData();
+    const product_slug = form.get("product_slug") as string;
+    const answers: Record<string, string | string[] | number> = JSON.parse(
+      (form.get("answers") as string) || "{}"
+    );
+    const contact: {
+      name: string;
+      email: string;
+      phone: string;
+      address: string;
+    } = JSON.parse((form.get("contact") as string) || "{}");
+    const site = "vpg";
+    const opmerkingen = (form.get("opmerkingen") as string) || "";
+    const bestand = form.get("bestand") as File | null;
 
     // Validate required fields
     if (!product_slug) {
@@ -152,74 +152,80 @@ export async function POST(request: NextRequest) {
       contact_address: contact.address,
     });
 
-    // Send emails in parallel (don't block on failures)
-    const emailPromises: Promise<{ success: boolean; error?: string }>[] = [];
+    // Prepare file attachment if provided
+    const attachments: { filename: string; content: Buffer }[] = [];
+    if (bestand && bestand.size > 0) {
+      const buffer = Buffer.from(await bestand.arrayBuffer());
+      attachments.push({
+        filename: bestand.name,
+        content: buffer,
+      });
+    }
+
+    // Send emails sequentially to avoid Resend rate limit (2 req/s)
+    const emailResults: { success: boolean; error?: string }[] = [];
 
     // Customer email
-    emailPromises.push(
-      (async () => {
-        try {
-          const { error } = await resend.emails.send({
-            from: RESEND_CONFIG.fromAddress,
-            to: [getRecipient(contact.email)],
-            subject: `${RESEND_CONFIG.subjects.quoteCustomer} - ${productName}`,
-            react: QuoteEmail({
-              customerName: contact.name,
-              productName,
-              configuration: configurationItems,
-            }),
-          });
+    try {
+      const { error } = await resend.emails.send({
+        from: RESEND_CONFIG.fromAddress,
+        to: [getRecipient(contact.email)],
+        subject: `${RESEND_CONFIG.subjects.quoteCustomer} - ${productName}`,
+        react: QuoteEmail({
+          customerName: contact.name,
+          productName,
+          configuration: configurationItems,
+          opmerkingen: opmerkingen || undefined,
+        }),
+      });
 
-          if (error) {
-            console.error("Failed to send customer quote email:", error);
-            return { success: false, error: error.message };
-          }
-          return { success: true };
-        } catch (err) {
-          console.error("Error sending customer quote email:", err);
-          return {
-            success: false,
-            error: err instanceof Error ? err.message : "Unknown error",
-          };
-        }
-      })()
-    );
+      if (error) {
+        console.error("Failed to send customer quote email:", error);
+        emailResults.push({ success: false, error: error.message });
+      } else {
+        emailResults.push({ success: true });
+      }
+    } catch (err) {
+      console.error("Error sending customer quote email:", err);
+      emailResults.push({
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
 
     // Admin notification email
-    emailPromises.push(
-      (async () => {
-        try {
-          const { error } = await resend.emails.send({
-            from: RESEND_CONFIG.fromAddress,
-            to: [RESEND_CONFIG.quoteRecipient],
-            subject: `${RESEND_CONFIG.subjects.quoteAdmin}: ${contact.name} - ${productName}`,
-            react: QuoteAdminNotification({
-              customerName: contact.name,
-              customerEmail: contact.email,
-              customerPhone: contact.phone || "-",
-              customerAddress: contact.address || "-",
-              productName,
-              configuration: configurationItems,
-            }),
-          });
+    try {
+      const { error } = await resend.emails.send({
+        from: RESEND_CONFIG.fromAddress,
+        to: [RESEND_CONFIG.quoteRecipient],
+        subject: `${RESEND_CONFIG.subjects.quoteAdmin}: ${contact.name} - ${productName}`,
+        react: QuoteAdminNotification({
+          customerName: contact.name,
+          customerEmail: contact.email,
+          customerPhone: contact.phone || "-",
+          customerAddress: contact.address || "-",
+          productName,
+          configuration: configurationItems,
+          opmerkingen: opmerkingen || undefined,
+          hasBestand: attachments.length > 0,
+          bestandNaam: bestand?.name,
+        }),
+        attachments: attachments.length > 0 ? attachments : undefined,
+      });
 
-          if (error) {
-            console.error("Failed to send admin notification email:", error);
-            return { success: false, error: error.message };
-          }
-          return { success: true };
-        } catch (err) {
-          console.error("Error sending admin notification email:", err);
-          return {
-            success: false,
-            error: err instanceof Error ? err.message : "Unknown error",
-          };
-        }
-      })()
-    );
-
-    // Wait for emails (don't fail request if emails fail)
-    const emailResults = await Promise.all(emailPromises);
+      if (error) {
+        console.error("Failed to send admin notification email:", error);
+        emailResults.push({ success: false, error: error.message });
+      } else {
+        emailResults.push({ success: true });
+      }
+    } catch (err) {
+      console.error("Error sending admin notification email:", err);
+      emailResults.push({
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
 
     return NextResponse.json({
       success: true,

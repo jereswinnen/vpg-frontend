@@ -28,6 +28,8 @@ export interface ContactDetails {
   street: string;
   postalCode: string;
   city: string;
+  opmerkingen: string;
+  bestand: File | null;
 }
 
 interface ProductOption {
@@ -75,6 +77,8 @@ export function Wizard({
     street: "",
     postalCode: "",
     city: "",
+    opmerkingen: "",
+    bestand: null,
   });
 
   // Validation state

@@ -22,12 +22,14 @@ interface QuoteEmailProps {
   customerName: string;
   productName: string;
   configuration: ConfigurationItem[];
+  opmerkingen?: string;
 }
 
 export function QuoteEmail({
   customerName,
   productName,
   configuration,
+  opmerkingen,
 }: QuoteEmailProps) {
   const contactUrl = "https://vpg.be/contact";
 
@@ -57,6 +59,13 @@ export function QuoteEmail({
             <InfoRow key={index} label={item.label} value={item.value} />
           ))}
         </InfoBox>
+
+        {opmerkingen && (
+          <>
+            <Text style={sectionTitle}>Uw opmerkingen</Text>
+            <Text style={messageBox}>{opmerkingen}</Text>
+          </>
+        )}
 
         <Hr style={layout.divider} />
 
@@ -101,6 +110,9 @@ interface QuoteAdminNotificationProps {
   customerAddress: string;
   productName: string;
   configuration: ConfigurationItem[];
+  opmerkingen?: string;
+  hasBestand?: boolean;
+  bestandNaam?: string;
 }
 
 export function QuoteAdminNotification({
@@ -110,6 +122,9 @@ export function QuoteAdminNotification({
   customerAddress,
   productName,
   configuration,
+  opmerkingen,
+  hasBestand,
+  bestandNaam,
 }: QuoteAdminNotificationProps) {
   return (
     <EmailLayout
@@ -165,6 +180,23 @@ export function QuoteAdminNotification({
             <Text style={typography.value}>{item.value}</Text>
           </React.Fragment>
         ))}
+
+        {hasBestand && (
+          <>
+            <Text style={typography.label}>Bijlage</Text>
+            <Text style={typography.value}>
+              {bestandNaam || "Bestand bijgevoegd"}
+            </Text>
+          </>
+        )}
+
+        {opmerkingen && (
+          <>
+            <Hr style={layout.divider} />
+            <Text style={typography.label}>Opmerkingen</Text>
+            <Text style={adminMessageBox}>{opmerkingen}</Text>
+          </>
+        )}
       </Section>
     </EmailLayout>
   );
@@ -186,6 +218,26 @@ const sectionTitle = {
   fontWeight: "600" as const,
   color: colors.primary,
   margin: "0 0 16px 0",
+};
+
+const messageBox = {
+  fontSize: "16px",
+  color: colors.text,
+  margin: "0",
+  whiteSpace: "pre-wrap" as const,
+  backgroundColor: colors.background,
+  padding: "16px",
+  borderRadius: "4px",
+};
+
+const adminMessageBox = {
+  fontSize: "16px",
+  color: colors.text,
+  margin: "0",
+  whiteSpace: "pre-wrap" as const,
+  backgroundColor: colors.background,
+  padding: "16px",
+  borderRadius: "4px",
 };
 
 const signatureStyle = {

@@ -2,7 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Field, FieldLabel, FieldGroup } from "@/components/ui/field";
+import { Textarea } from "@/components/ui/textarea";
+import { Field, FieldLabel, FieldGroup, FieldSeparator } from "@/components/ui/field";
 import type { ContactDetails } from "../Wizard";
 
 interface ContactStepProps {
@@ -101,6 +102,31 @@ export function ContactStep({
             onChange={(e) => updateField("city", e.target.value)}
             autoComplete="address-level2"
             placeholder="Plaats"
+          />
+        </Field>
+
+        <FieldSeparator />
+
+        <Field>
+          <FieldLabel htmlFor="contact-bestand">Bestand</FieldLabel>
+          <Input
+            id="contact-bestand"
+            type="file"
+            accept="image/*,application/pdf,.doc,.docx"
+            onChange={(e) =>
+              onChange({ ...contactDetails, bestand: e.target.files?.[0] || null })
+            }
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="contact-opmerkingen">Opmerkingen</FieldLabel>
+          <Textarea
+            id="contact-opmerkingen"
+            value={contactDetails.opmerkingen}
+            onChange={(e) => updateField("opmerkingen", e.target.value)}
+            placeholder="Eventuele opmerkingen of bijkomende informatie"
+            className="min-h-32"
           />
         </Field>
       </FieldGroup>

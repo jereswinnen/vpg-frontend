@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,9 +52,13 @@ export function SummaryStep({
   >("idle");
   const [submissionError, setSubmissionError] = useState<string | null>(null);
 
+  // Guard against StrictMode double-mount
+  const hasSubmittedRef = useRef(false);
+
   // Submit quote on mount
   useEffect(() => {
-    if (submissionStatus === "idle") {
+    if (submissionStatus === "idle" && !hasSubmittedRef.current) {
+      hasSubmittedRef.current = true;
       submitQuote();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,19 +72,25 @@ export function SummaryStep({
     setSubmissionError(null);
 
     try {
+      const formData = new FormData();
+      formData.set("product_slug", selectedProduct || "");
+      formData.set("answers", JSON.stringify(answers));
+      formData.set("contact", JSON.stringify({
+        name: contactDetails.name,
+        email: contactDetails.email,
+        phone: contactDetails.phone,
+        address: `${contactDetails.street}, ${contactDetails.postalCode} ${contactDetails.city}`,
+      }));
+      if (contactDetails.opmerkingen.trim()) {
+        formData.set("opmerkingen", contactDetails.opmerkingen);
+      }
+      if (contactDetails.bestand) {
+        formData.set("bestand", contactDetails.bestand);
+      }
+
       const response = await fetch("/api/configurator/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_slug: selectedProduct,
-          answers,
-          contact: {
-            name: contactDetails.name,
-            email: contactDetails.email,
-            phone: contactDetails.phone,
-            address: `${contactDetails.street}, ${contactDetails.postalCode} ${contactDetails.city}`,
-          },
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -191,6 +201,12 @@ export function SummaryStep({
             <SummaryRow label="E-mail" value={contactDetails.email} />
             <SummaryRow label="Telefoon" value={contactDetails.phone} />
             <SummaryRow label="Adres" value={`${contactDetails.street}, ${contactDetails.postalCode} ${contactDetails.city}`} />
+            {contactDetails.bestand && (
+              <SummaryRow label="Bestand" value={contactDetails.bestand.name} />
+            )}
+            {contactDetails.opmerkingen.trim() && (
+              <SummaryRow label="Opmerkingen" value={contactDetails.opmerkingen} />
+            )}
           </dl>
         </CardContent>
       </Card>
