@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { resend } from "@/lib/resend";
+import { verifyTurnstile } from "@/lib/turnstile";
 import { RESEND_CONFIG, DEFAULT_TEST_EMAIL } from "@/config/resend";
 import {
   calculatePrice,
@@ -58,6 +59,20 @@ function formatAnswerValue(
 export async function POST(request: NextRequest) {
   try {
     const form = await request.formData();
+
+    // Verify Turnstile token
+    const turnstileToken = form.get("turnstile_token") as string;
+    const forwardedFor = request.headers.get("x-forwarded-for");
+    const clientIp = forwardedFor?.split(",")[0]?.trim();
+    const turnstileResult = await verifyTurnstile(turnstileToken, clientIp);
+    if (!turnstileResult.success) {
+      console.error("Turnstile verification failed:", turnstileResult.errorCodes);
+      return NextResponse.json(
+        { error: "Verificatie mislukt. Probeer het opnieuw." },
+        { status: 400 }
+      );
+    }
+
     const product_slug = form.get("product_slug") as string;
     const answers: Record<string, string | string[] | number> = JSON.parse(
       (form.get("answers") as string) || "{}"

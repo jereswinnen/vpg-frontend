@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { CheckCircle2Icon } from "lucide-react";
 import type { WizardAnswers, ContactDetails } from "../Wizard";
+import { TurnstileWidget, type TurnstileInstance } from "@/components/forms/TurnstileWidget";
 
 // =============================================================================
 // Types
@@ -55,14 +56,18 @@ export function SummaryStep({
   // Guard against StrictMode double-mount
   const hasSubmittedRef = useRef(false);
 
-  // Submit quote on mount
+  // Turnstile state
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+
+  // Submit quote when token is ready and not yet submitted
   useEffect(() => {
-    if (submissionStatus === "idle" && !hasSubmittedRef.current) {
+    if (turnstileToken && submissionStatus === "idle" && !hasSubmittedRef.current) {
       hasSubmittedRef.current = true;
       submitQuote();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [turnstileToken]);
 
   // Submit quote function
   const submitQuote = async () => {
@@ -86,6 +91,9 @@ export function SummaryStep({
       }
       if (contactDetails.bestand) {
         formData.set("bestand", contactDetails.bestand);
+      }
+      if (turnstileToken) {
+        formData.set("turnstile_token", turnstileToken);
       }
 
       const response = await fetch("/api/configurator/submit", {
@@ -113,6 +121,9 @@ export function SummaryStep({
           : "Er is iets misgegaan bij het versturen.",
       );
       setSubmissionStatus("error");
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
+      hasSubmittedRef.current = false;
     }
   };
 
@@ -143,13 +154,23 @@ export function SummaryStep({
             className="mt-3"
             onClick={() => {
               setSubmissionStatus("idle");
-              submitQuote();
+              turnstileRef.current?.reset();
+              setTurnstileToken(null);
+              hasSubmittedRef.current = false;
             }}
           >
             Opnieuw proberen
           </Button>
         </div>
       )}
+
+      {/* Turnstile verification */}
+      <TurnstileWidget
+        ref={turnstileRef}
+        onSuccess={setTurnstileToken}
+        onError={() => setTurnstileToken(null)}
+        onExpire={() => setTurnstileToken(null)}
+      />
 
       {/* Configuration Summary */}
       <Card>
